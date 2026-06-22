@@ -7,8 +7,9 @@
     {
       "name": "android-mobile-config",
       "source": {
-        "source": "local",
-        "path": "./"
+        "source": "url",
+        "url": "https://github.com/dthuy62/android-mobile-config.git",
+        "ref": "main"
       },
       "policy": {
         "installation": "AVAILABLE",
