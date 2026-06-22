@@ -1,5 +1,5 @@
 {
-  "name": "android-mobile-config-marketplace",
+  "name": "android-mobile-config",
   "interface": {
     "displayName": "Android Mobile Config"
   },
@@ -18,4 +18,3 @@
     }
   ]
 }
-
