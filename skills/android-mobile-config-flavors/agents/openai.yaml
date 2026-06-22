@@ -1,0 +1,5 @@
+interface:
+  display_name: "Android Mobile Config: Flavors"
+  short_description: "Configure Android product flavors"
+  default_prompt: "Use $android-mobile-config-flavors to configure Android dev/prod product flavors."
+

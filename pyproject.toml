@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "android-mobile-config-skill"
+version = "0.1.0"
+description = "Portable Agent Skill for Android product flavors, assets, and network security."
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+android-mobile-config = "android_mobile_config.cli:main"
+
+[project.optional-dependencies]
+assets = ["Pillow>=10"]
+dev = ["pytest>=8", "PyYAML>=6"]
+
+[tool.setuptools.packages.find]
+where = ["skills/android-mobile-config/scripts"]
+include = ["android_mobile_config*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["skills/android-mobile-config/scripts"]

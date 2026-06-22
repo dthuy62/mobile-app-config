@@ -1,0 +1,28 @@
+{
+  "name": "android-mobile-config",
+  "version": "0.1.0",
+  "description": "Configure Android product flavors, app assets, and optional network security from agent workflows.",
+  "author": {
+    "name": "dthuy62",
+    "url": "https://github.com/dthuy62"
+  },
+  "homepage": "https://github.com/dthuy62/android-mobile-config",
+  "repository": "https://github.com/dthuy62/android-mobile-config",
+  "license": "MIT",
+  "keywords": ["android", "gradle", "flavors", "mobile", "codex"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Android Mobile Config",
+    "shortDescription": "Configure Android flavors and app assets",
+    "longDescription": "Deterministic Android setup workflows for product flavors, flavor-specific app names, generated assets, and optional network security.",
+    "developerName": "dthuy62",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/dthuy62/android-mobile-config",
+    "defaultPrompt": [
+      "Use Android Mobile Config to configure dev and prod Android flavors.",
+      "Use Android Mobile Config to generate Android app assets.",
+      "Use Android Mobile Config to configure dev-only network security."
+    ]
+  }
+}

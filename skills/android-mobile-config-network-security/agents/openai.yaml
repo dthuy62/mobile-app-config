@@ -1,0 +1,5 @@
+interface:
+  display_name: "Android Mobile Config: Network Security"
+  short_description: "Configure Android network security"
+  default_prompt: "Use $android-mobile-config-network-security to configure dev-only Android network security."
+
