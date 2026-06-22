@@ -7,6 +7,9 @@ from typing import Any
 from .config import ConfigError
 from .resources import write_flavor_app_names
 
+GOOGLE_SERVICES_PLUGIN = 'id("com.google.gms.google-services")'
+GOOGLE_SERVICES_ROOT_PLUGIN = f'{GOOGLE_SERVICES_PLUGIN} version "4.5.0" apply false'
+
 
 def configure_flavors(root: Path, config: dict[str, Any]) -> list[str]:
     module = config["module"]
@@ -46,8 +49,70 @@ def validate_flavors(root: Path, config: dict[str, Any]) -> list[str]:
     return errors
 
 
+def ensure_google_services_gradle(root: Path, config: dict[str, Any]) -> None:
+    root_gradle = root / "build.gradle.kts"
+    app_gradle = root / config["module"] / "build.gradle.kts"
+    if not root_gradle.exists():
+        raise ConfigError(f"Missing Kotlin Gradle file: {root_gradle}")
+    if not app_gradle.exists():
+        raise ConfigError(f"Missing Kotlin Gradle file: {app_gradle}")
+    root_gradle.write_text(ensure_plugin(root_gradle.read_text(), GOOGLE_SERVICES_ROOT_PLUGIN))
+    app_gradle.write_text(ensure_plugin(app_gradle.read_text(), GOOGLE_SERVICES_PLUGIN))
+
+
+def validate_google_services_gradle(root: Path, config: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    root_gradle = root / "build.gradle.kts"
+    app_gradle = root / config["module"] / "build.gradle.kts"
+    if not root_gradle.exists():
+        errors.append(f"Missing Kotlin Gradle file: {root_gradle}")
+    elif GOOGLE_SERVICES_PLUGIN not in root_gradle.read_text():
+        errors.append("Missing Google Services plugin in root build.gradle.kts")
+    if not app_gradle.exists():
+        errors.append(f"Missing Kotlin Gradle file: {app_gradle}")
+    elif GOOGLE_SERVICES_PLUGIN not in app_gradle.read_text():
+        errors.append("Missing Google Services plugin in app build.gradle.kts")
+    return errors
+
+
 def expected_tasks(config: dict[str, Any]) -> list[str]:
     return [f"assemble{flavor[:1].upper()}{flavor[1:]}Debug" for flavor in config["flavors"]]
+
+
+def infer_application_id(root: Path, config: dict[str, Any]) -> str:
+    gradle_path = root / config["module"] / "build.gradle.kts"
+    if not gradle_path.exists():
+        raise ConfigError(f"Missing Kotlin Gradle file: {gradle_path}")
+    text = gradle_path.read_text()
+    block_range = find_block_range(text, "defaultConfig")
+    if block_range is None:
+        raise ConfigError("Cannot find android.defaultConfig block")
+    _start, open_index, close_index = block_range
+    default_config = text[open_index + 1 : close_index]
+    match = re.search(r'applicationId\s*=\s*"([^"]+)"', default_config)
+    if not match:
+        raise ConfigError("Cannot infer defaultConfig.applicationId")
+    return match.group(1)
+
+
+def package_names(root: Path, config: dict[str, Any]) -> dict[str, str]:
+    application_id = infer_application_id(root, config)
+    packages: dict[str, str] = {}
+    for flavor, flavor_config in config["flavors"].items():
+        packages[flavor] = application_id + flavor_config.get("applicationIdSuffix", "")
+    return packages
+
+
+def ensure_plugin(text: str, plugin_line: str) -> str:
+    if plugin_line in text or plugin_line.split(" version ", 1)[0] in text:
+        return text
+    block_range = find_block_range(text, "plugins")
+    if block_range is None:
+        return f"plugins {{\n  {plugin_line}\n}}\n\n{text}"
+    _start, open_index, close_index = block_range
+    body = text[open_index + 1 : close_index].rstrip()
+    indent = "  "
+    return text[: open_index + 1] + body + f"\n{indent}{plugin_line}\n" + text[close_index:]
 
 
 def ensure_flavor_dimension(text: str, dimension: str) -> str:
@@ -143,4 +208,3 @@ def find_matching_brace(text: str, open_index: int) -> int:
             if depth == 0:
                 return index
     return -1
-

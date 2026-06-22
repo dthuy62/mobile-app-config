@@ -27,6 +27,20 @@ The default config file is `android-mobile-config.json` in the Android project r
   "networkSecurity": {
     "enabled": false
   },
+  "firebase": {
+    "enabled": false,
+    "mode": "single",
+    "project": "",
+    "createApps": false,
+    "flavors": {
+      "dev": {
+        "project": ""
+      },
+      "prod": {
+        "project": ""
+      }
+    }
+  },
   "assets": {
     "enabled": false,
     "sourceIcon": "",
@@ -40,3 +54,14 @@ The default config file is `android-mobile-config.json` in the Android project r
 
 Commands auto-create this file when missing. Existing files are not rewritten unless `init --force` is used.
 
+Firebase single-project mode:
+
+```bash
+android-mobile-config firebase --mode single --project my-firebase
+```
+
+Firebase per-flavor mode:
+
+```bash
+android-mobile-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+```

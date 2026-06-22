@@ -1,4 +1,4 @@
 interface:
   display_name: "Android Mobile Config"
-  short_description: "Configure Android flavors and app assets"
-  default_prompt: "Use $android-mobile-config to configure Android product flavors, app assets, or network security."
+  short_description: "Configure Android flavors, Firebase, and app assets"
+  default_prompt: "Use $android-mobile-config to configure Android product flavors, Firebase, app assets, or network security."
