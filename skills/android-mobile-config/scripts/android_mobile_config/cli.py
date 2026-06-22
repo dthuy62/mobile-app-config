@@ -5,7 +5,8 @@ import sys
 from pathlib import Path
 
 from .assets import generate_assets, validate_assets
-from .config import ConfigError, config_path, load_or_init
+from .config import ConfigError, config_path, load_or_init, write_config
+from .firebase import apply_firebase_args, configure_firebase, validate_firebase
 from .gradle_kts import configure_flavors, expected_tasks, validate_flavors
 from .network_security import configure_network_security, validate_network_security
 
@@ -42,6 +43,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "validate-network-security":
             return report_errors(validate_network_security(root, config), "network security valid")
+        if args.command == "firebase":
+            apply_firebase_args(config, args)
+            if any([args.mode, args.project, args.flavor, args.create_apps]):
+                write_config(config_path(root), config)
+            print(configure_firebase(root, config))
+            return 0
+        if args.command == "validate-firebase":
+            return report_errors(validate_firebase(root, config), "firebase valid")
     except ConfigError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -59,8 +68,23 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("validate-flavors")
     sub.add_parser("assets")
     sub.add_parser("validate-assets")
+    firebase = sub.add_parser(
+        "firebase",
+        epilog=(
+            "examples:\n"
+            "  android-mobile-config firebase --mode single --project my-firebase\n"
+            "  android-mobile-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod\n"
+            "  android-mobile-config firebase --mode single --project my-firebase --create-apps"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    firebase.add_argument("--mode", choices=["single", "per-flavor"])
+    firebase.add_argument("--project")
+    firebase.add_argument("--flavor", action="append", default=[], help="Flavor project mapping: flavor=project")
+    firebase.add_argument("--create-apps", action="store_true")
     sub.add_parser("network-security")
     sub.add_parser("validate-network-security")
+    sub.add_parser("validate-firebase")
     return parser
 
 
@@ -75,4 +99,3 @@ def report_errors(errors: list[str], ok_message: str) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

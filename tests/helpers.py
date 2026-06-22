@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,10 +17,11 @@ def copy_fixture(tmp_path: Path, name: str) -> Path:
     return target
 
 
-def run_cli(project: Path, *args: str) -> subprocess.CompletedProcess[str]:
+def run_cli(project: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["python3", str(CLI), "--root", str(project), *args],
+        [sys.executable, str(CLI), "--root", str(project), *args],
         cwd=project,
+        env=env,
         text=True,
         capture_output=True,
         check=False,

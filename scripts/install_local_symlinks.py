@@ -12,6 +12,7 @@ SKILL_NAMES = [
     "android-mobile-config",
     "android-mobile-config-init",
     "android-mobile-config-flavors",
+    "android-mobile-config-firebase",
     "android-mobile-config-assets",
     "android-mobile-config-network-security",
     "android-mobile-config-help",

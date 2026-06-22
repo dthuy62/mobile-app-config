@@ -1,6 +1,6 @@
 # Android Mobile Config
 
-Android Mobile Config is a Codex plugin for configuring Android app environments from agent workflows. It gives Codex deterministic commands for product flavors, flavor-specific app names, Android app assets, and optional network-security XML.
+Android Mobile Config is a Codex plugin for configuring Android app environments from agent workflows. It gives Codex deterministic commands for product flavors, Firebase multi-flavor config, flavor-specific app names, Android app assets, and optional network-security XML.
 
 The plugin is designed for Codex Marketplace distribution first. Claude Code and standalone skill installs are supported as manual compatibility paths.
 
@@ -10,6 +10,8 @@ The plugin is designed for Codex Marketplace distribution first. Claude Code and
 - Create and validate `dev` and `prod` variants.
 - Generate flavor-specific `app_name` resources.
 - Add `applicationIdSuffix` and `BuildConfig` fields from `android-mobile-config.json`.
+- Configure Firebase `google-services.json` for one shared Firebase project or one project per flavor.
+- Create missing Firebase Android apps only when explicitly requested.
 - Auto-create `android-mobile-config.json` from the current Android project when it is missing.
 - Generate launcher, adaptive, splash, and notification assets when asset generation is explicitly enabled.
 - Configure Android network-security XML only when explicitly enabled.
@@ -18,6 +20,7 @@ The plugin is designed for Codex Marketplace distribution first. Claude Code and
   - `$android-mobile-config`
   - `$android-mobile-config-init`
   - `$android-mobile-config-flavors`
+  - `$android-mobile-config-firebase`
   - `$android-mobile-config-assets`
   - `$android-mobile-config-network-security`
   - `$android-mobile-config-help`
@@ -27,6 +30,7 @@ The plugin is designed for Codex Marketplace distribution first. Claude Code and
 - Codex for marketplace or plugin usage.
 - Python 3.9 or newer.
 - An Android project with a Kotlin Gradle app module, usually `app/build.gradle.kts`.
+- Optional: Firebase CLI for Firebase setup.
 - Optional: Pillow 10 or newer for asset generation.
 
 Install optional local CLI dependencies when developing this plugin:
@@ -132,6 +136,7 @@ For tools such as Cursor, Antigravity, or other agent hosts, use the skill folde
 skills/android-mobile-config/
 skills/android-mobile-config-init/
 skills/android-mobile-config-flavors/
+skills/android-mobile-config-firebase/
 skills/android-mobile-config-assets/
 skills/android-mobile-config-network-security/
 skills/android-mobile-config-help/
@@ -165,6 +170,7 @@ From Codex, invoke one of the skills:
 
 ```text
 Use $android-mobile-config-flavors to configure dev and prod flavors.
+Use $android-mobile-config-firebase to configure Firebase for Android flavors.
 Use $android-mobile-config-assets to generate launcher and splash assets.
 Use $android-mobile-config-network-security to enable local HTTP for dev only.
 Use $android-mobile-config-help to show available commands.
@@ -176,11 +182,48 @@ From a shell in an Android project root:
 android-mobile-config init
 android-mobile-config flavors
 android-mobile-config validate-flavors
+android-mobile-config firebase
+android-mobile-config validate-firebase
 android-mobile-config assets
 android-mobile-config validate-assets
 android-mobile-config network-security
 android-mobile-config validate-network-security
 ```
+
+### Firebase multi-flavor setup
+
+Install Firebase CLI and log in locally:
+
+```bash
+npm install -g firebase-tools
+firebase login
+```
+
+Use one Firebase project for every flavor:
+
+```bash
+android-mobile-config firebase --mode single --project my-firebase
+```
+
+Use one Firebase project per flavor:
+
+```bash
+android-mobile-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+```
+
+Create missing Firebase Android apps only when explicitly requested:
+
+```bash
+android-mobile-config firebase --mode single --project my-firebase --create-apps
+```
+
+Validate generated files:
+
+```bash
+android-mobile-config validate-firebase
+```
+
+If Firebase CLI is not logged in, the command stops. Run `firebase login`, then rerun the same `android-mobile-config firebase` command.
 
 If the Python package is not installed, call the bundled CLI directly:
 
@@ -192,6 +235,8 @@ Default behavior:
 
 - Missing `android-mobile-config.json` is auto-created from the current project.
 - Existing config is not rewritten unless `init --force` is used.
+- `firebase` exits as a clear no-op unless `firebase.enabled=true` or Firebase flags are provided.
+- Firebase auth uses local Firebase CLI login. If needed, run `firebase login`, then rerun the command.
 - `assets` exits as a clear no-op unless `assets.enabled=true`.
 - `network-security` exits as a clear no-op unless `networkSecurity.enabled=true`.
 
@@ -206,6 +251,7 @@ android-mobile-config/
     android-mobile-config/              Canonical skill with CLI and references
     android-mobile-config-init/         Command-style skill
     android-mobile-config-flavors/      Command-style skill
+    android-mobile-config-firebase/     Command-style skill
     android-mobile-config-assets/       Command-style skill
     android-mobile-config-network-security/
     android-mobile-config-help/

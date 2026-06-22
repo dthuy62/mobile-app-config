@@ -30,6 +30,16 @@ DEFAULT_CONFIG: dict[str, Any] = {
         },
     },
     "networkSecurity": {"enabled": False},
+    "firebase": {
+        "enabled": False,
+        "mode": "single",
+        "project": "",
+        "createApps": False,
+        "flavors": {
+            "dev": {"project": ""},
+            "prod": {"project": ""},
+        },
+    },
     "assets": {
         "enabled": False,
         "sourceIcon": "",

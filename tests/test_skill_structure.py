@@ -45,6 +45,7 @@ def test_build_dist_contains_only_portable_skill_files() -> None:
         names = archive.namelist()
     assert "android-mobile-config-skills/android-mobile-config/SKILL.md" in names
     assert "android-mobile-config-skills/android-mobile-config-flavors/SKILL.md" in names
+    assert "android-mobile-config-skills/android-mobile-config-firebase/SKILL.md" in names
     assert "android-mobile-config-skills/android-mobile-config-assets/SKILL.md" in names
     assert all("/tests/" not in name for name in names)
     assert all("__pycache__" not in name for name in names)

@@ -1,7 +1,7 @@
 {
   "name": "android-mobile-config",
-  "version": "0.1.0",
-  "description": "Configure Android product flavors, app assets, and optional network security from agent workflows.",
+  "version": "0.2.0",
+  "description": "Configure Android product flavors, Firebase, app assets, and optional network security from agent workflows.",
   "author": {
     "name": "dthuy62",
     "url": "https://github.com/dthuy62"
