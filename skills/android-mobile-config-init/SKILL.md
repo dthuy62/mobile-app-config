@@ -3,7 +3,7 @@ name: android-mobile-config-init
 description: Initialize android-mobile-config.json for an Android project. Use when the user says "/android-mobile-config-init", "/android-mobile-config init", "android mobile config init", or asks to create or refresh the Android mobile config file before configuring flavors, assets, or network security.
 ---
 
-# Android Mobile Config Init
+# Mobile App Config Init
 
 Initialize the config file from the Android project root.
 

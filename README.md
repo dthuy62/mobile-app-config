@@ -1,6 +1,6 @@
-# Android Mobile Config
+# Mobile App Config
 
-Android Mobile Config is a Codex plugin for configuring Android app environments from agent workflows. It gives Codex deterministic commands for product flavors, Firebase multi-flavor config, flavor-specific app names, Android app assets, and optional network-security XML.
+Mobile App Config is a Codex plugin for configuring mobile app environments from agent workflows. It gives Codex deterministic commands for Android product flavors, package names, Firebase multi-flavor config, flavor-specific app names, Android app assets, and optional network-security XML.
 
 The plugin is designed for Codex Marketplace distribution first. Claude Code and standalone skill installs are supported as manual compatibility paths.
 
@@ -10,10 +10,11 @@ The plugin is designed for Codex Marketplace distribution first. Claude Code and
 - Create and validate `dev` and `prod` variants.
 - Generate flavor-specific `app_name` resources.
 - Add `applicationIdSuffix` and `BuildConfig` fields from `android-mobile-config.json`.
+- Sync Android `applicationId`, namespace, and Kotlin/Java source package declarations.
 - Configure Firebase `google-services.json` for one shared Firebase project or one project per flavor.
 - Create missing Firebase Android apps only when explicitly requested.
 - Auto-create `android-mobile-config.json` from the current Android project when it is missing.
-- Generate launcher, adaptive, splash, and notification assets when asset generation is explicitly enabled.
+- Generate legacy launcher icons, adaptive icons, optional themed icons, and XML-only splash screens.
 - Configure Android network-security XML only when explicitly enabled.
 - Refuse broad production cleartext traffic unless explicitly allowed.
 - Expose focused command-style skills:
@@ -54,10 +55,10 @@ This is the primary installation path.
 After the plugin is published, add the marketplace source:
 
 ```bash
-codex plugin marketplace add dthuy62/android-mobile-config
+codex plugin marketplace add dthuy62/mobile-app-config
 ```
 
-Then restart Codex and install `Android Mobile Config` from the Codex plugin directory.
+Then restart Codex and install `Mobile App Config` from the Codex plugin directory.
 
 This repository includes the marketplace and plugin metadata Codex expects:
 
@@ -70,8 +71,8 @@ skills/
 For local marketplace testing before publication:
 
 ```bash
-git clone https://github.com/dthuy62/android-mobile-config.git android-mobile-config
-codex plugin marketplace add ./android-mobile-config
+git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
+codex plugin marketplace add ./mobile-app-config
 ```
 
 Restart Codex after changing plugin metadata or skills.
@@ -81,8 +82,8 @@ Restart Codex after changing plugin metadata or skills.
 Use this path while developing the plugin locally.
 
 ```bash
-git clone https://github.com/dthuy62/android-mobile-config.git android-mobile-config
-cd android-mobile-config
+git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
+cd mobile-app-config
 python3 scripts/validate_skill.py
 python3 scripts/build_dist.py
 codex plugin marketplace add .
@@ -95,8 +96,8 @@ Codex loads plugins through a marketplace entry, even for local plugin testing. 
 Claude Code is supported manually. Marketplace packaging for Claude Code is not the primary target of this repo.
 
 ```bash
-git clone https://github.com/dthuy62/android-mobile-config.git android-mobile-config
-claude --plugin-dir ./android-mobile-config
+git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
+claude --plugin-dir ./mobile-app-config
 ```
 
 Claude Code plugin metadata lives at:
@@ -121,8 +122,8 @@ Restart Claude Code after copying.
 For local skill-only usage without Codex plugin installation:
 
 ```bash
-git clone https://github.com/dthuy62/android-mobile-config.git android-mobile-config
-cd android-mobile-config
+git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
+cd mobile-app-config
 python3 scripts/install_local_symlinks.py
 ```
 
@@ -170,8 +171,9 @@ From Codex, invoke one of the skills:
 
 ```text
 Use $android-mobile-config-flavors to configure dev and prod flavors.
+Use $android-mobile-config to change Android package/applicationId.
 Use $android-mobile-config-firebase to configure Firebase for Android flavors.
-Use $android-mobile-config-assets to generate launcher and splash assets.
+Use $android-mobile-config-assets to generate app icons and splash screens.
 Use $android-mobile-config-network-security to enable local HTTP for dev only.
 Use $android-mobile-config-help to show available commands.
 ```
@@ -179,16 +181,69 @@ Use $android-mobile-config-help to show available commands.
 From a shell in an Android project root:
 
 ```bash
-android-mobile-config init
-android-mobile-config flavors
-android-mobile-config validate-flavors
-android-mobile-config firebase
-android-mobile-config validate-firebase
-android-mobile-config assets
-android-mobile-config validate-assets
-android-mobile-config network-security
-android-mobile-config validate-network-security
+mobile-app-config init
+mobile-app-config flavors
+mobile-app-config validate-flavors
+mobile-app-config package-name --application-id com.aistudio.taskarena.kymzap
+mobile-app-config validate-package-name
+mobile-app-config firebase
+mobile-app-config validate-firebase
+mobile-app-config assets --type app-icons --image branding/logo.png
+mobile-app-config assets --type splash-screens --image branding/splash.png
+mobile-app-config validate-assets --type all
+mobile-app-config network-security
+mobile-app-config validate-network-security
 ```
+
+`android-mobile-config` remains available as a backward-compatible CLI alias.
+
+### Package name sync
+
+Change the base Android package/application ID and sync source packages:
+
+```bash
+mobile-app-config package-name --application-id com.aistudio.taskarena.kymzap
+mobile-app-config validate-package-name
+```
+
+The command updates app `namespace`, `defaultConfig.applicationId`, Kotlin/Java package folders, package declarations, and imports that reference the old package prefix. Flavor `applicationIdSuffix` values are preserved.
+
+### Android app icons and splash screens
+
+Generate modern Android app icons:
+
+```bash
+mobile-app-config assets --type app-icons --image branding/logo.png
+```
+
+Generate XML-only splash resources:
+
+```bash
+mobile-app-config assets --type splash-screens --image branding/splash.png
+```
+
+Generate both from one image:
+
+```bash
+mobile-app-config assets --type all --image branding/logo.png
+```
+
+Optional flags:
+
+```bash
+mobile-app-config assets --type app-icons \
+  --image branding/logo.png \
+  --background-color '#FFFFFF' \
+  --monochrome-image branding/logo-mono.png
+
+mobile-app-config assets --type splash-screens \
+  --image branding/splash.png \
+  --background-color '#FFFFFF' \
+  --dark-image branding/splash-dark.png \
+  --dark-background-color '#000000'
+```
+
+App icons include legacy `mipmap-*` PNGs, adaptive icon XML/resources for Android 8+, and optional monochrome themed icons for Android 13+ launchers. Splash screens use Android 12+ platform splash attrs plus legacy `windowBackground` resources for older Android. Android 12+ splash screens are icon plus background, not full-screen artwork.
 
 ### Firebase multi-flavor setup
 
@@ -202,33 +257,33 @@ firebase login
 Use one Firebase project for every flavor:
 
 ```bash
-android-mobile-config firebase --mode single --project my-firebase
+mobile-app-config firebase --mode single --project my-firebase
 ```
 
 Use one Firebase project per flavor:
 
 ```bash
-android-mobile-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
 ```
 
 Create missing Firebase Android apps only when explicitly requested:
 
 ```bash
-android-mobile-config firebase --mode single --project my-firebase --create-apps
+mobile-app-config firebase --mode single --project my-firebase --create-apps
 ```
 
 Validate generated files:
 
 ```bash
-android-mobile-config validate-firebase
+mobile-app-config validate-firebase
 ```
 
-If Firebase CLI is not logged in, the command stops. Run `firebase login`, then rerun the same `android-mobile-config firebase` command.
+If Firebase CLI is not logged in, the command stops. Run `firebase login`, then rerun the same `mobile-app-config firebase` command.
 
 If the Python package is not installed, call the bundled CLI directly:
 
 ```bash
-python3 /path/to/android-mobile-config/skills/android-mobile-config/scripts/android-mobile-config flavors
+python3 /path/to/mobile-app-config/skills/android-mobile-config/scripts/mobile-app-config flavors
 ```
 
 Default behavior:
@@ -237,18 +292,18 @@ Default behavior:
 - Existing config is not rewritten unless `init --force` is used.
 - `firebase` exits as a clear no-op unless `firebase.enabled=true` or Firebase flags are provided.
 - Firebase auth uses local Firebase CLI login. If needed, run `firebase login`, then rerun the command.
-- `assets` exits as a clear no-op unless `assets.enabled=true`.
+- `assets` exits as a clear no-op unless `assets.enabled=true` or asset flags are provided.
 - `network-security` exits as a clear no-op unless `networkSecurity.enabled=true`.
 
 ## Structure
 
 ```text
-android-mobile-config/
+mobile-app-config/
   .agents/plugins/marketplace.json      Codex marketplace catalog
   .codex-plugin/plugin.json             Codex plugin manifest
   .claude-plugin/plugin.json            Claude Code plugin manifest
   skills/
-    android-mobile-config/              Canonical skill with CLI and references
+    android-mobile-config/              Canonical Android skill with CLI and references
     android-mobile-config-init/         Command-style skill
     android-mobile-config-flavors/      Command-style skill
     android-mobile-config-firebase/     Command-style skill
@@ -271,7 +326,7 @@ android-mobile-config/
 | Codex Marketplace         | `.agents/plugins/marketplace.json`            | Primary distribution path                      |
 | Codex Plugin              | `.codex-plugin/plugin.json` and `skills/`     | Plugin root is this repository                 |
 | Codex Skill Manual        | `~/.codex/skills/<skill-name>`                | Created by `scripts/install_local_symlinks.py` |
-| Claude Code Plugin Manual | `claude --plugin-dir ./android-mobile-config` | Uses `.claude-plugin/plugin.json`              |
+| Claude Code Plugin Manual | `claude --plugin-dir ./mobile-app-config`     | Uses `.claude-plugin/plugin.json`              |
 | Claude Code Skill Manual  | `~/.claude/skills/<skill-name>`               | Copy `skills/android-mobile-config*`           |
 | Project-specific Codex    | `<project>/.codex/skills/<skill-name>`        | Copy skill folders into the Android repo       |
 | Project-specific Claude   | `<project>/.claude/skills/<skill-name>`       | Copy skill folders into the Android repo       |
@@ -287,8 +342,8 @@ python3 scripts/build_dist.py
 Output:
 
 ```text
-dist/android-mobile-config-skills/
-dist/android-mobile-config-skills.zip
+dist/mobile-app-config-skills/
+dist/mobile-app-config-skills.zip
 ```
 
 ## Development

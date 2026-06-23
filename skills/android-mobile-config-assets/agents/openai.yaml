@@ -1,5 +1,4 @@
 interface:
-  display_name: "Android Mobile Config: Assets"
+  display_name: "Mobile App Config: Assets"
   short_description: "Generate Android app assets"
-  default_prompt: "Use $android-mobile-config-assets to generate launcher, splash, and notification assets."
-
+  default_prompt: "Use $android-mobile-config-assets to generate app icons and splash screen resources."

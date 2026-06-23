@@ -1,9 +1,9 @@
 ---
 name: android-mobile-config-help
-description: Quick reference for android-mobile-config commands and local usage. Use when the user says "/android-mobile-config-help", "/android-mobile-config help", "android mobile config help", "what android-mobile-config commands exist", or asks how to use the Android Mobile Config skill.
+description: Quick reference for android-mobile-config commands and local usage. Use when the user says "/android-mobile-config-help", "/android-mobile-config help", "android mobile config help", "what android-mobile-config commands exist", or asks how to use the Mobile App Config skill.
 ---
 
-# Android Mobile Config Help
+# Mobile App Config Help
 
 Display this quick reference. One-shot only; do not change files unless the user asks.
 

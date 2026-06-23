@@ -1,9 +1,9 @@
 ---
 name: android-mobile-config
-description: Configure Android mobile app project setup with deterministic scripts for product flavors, flavor-specific app names, Firebase multi-flavor config, launcher/adaptive/splash/notification assets, and optional Android network security config. Use when the user asks to add or validate dev/prod Android flavors, Firebase google-services.json setup, generate Android app icons or splash assets, create android-mobile-config.json, or configure Android network-security XML for local/dev builds.
+description: Configure Android mobile app project setup with deterministic scripts for product flavors, flavor-specific app names, package names, Firebase multi-flavor config, launcher/adaptive/splash assets, and optional Android network security config. Use when the user asks to add or validate dev/prod Android flavors, change Android package/applicationId, Firebase google-services.json setup, generate Android app icons or splash screens, create android-mobile-config.json, or configure Android network-security XML for local/dev builds.
 ---
 
-# Android Mobile Config
+# Mobile App Config
 
 Use this skill for Android app configuration tasks that are fragile to edit by hand. Prefer the bundled CLI scripts over manual Gradle, manifest, or resource edits.
 
@@ -13,8 +13,9 @@ Run commands from the Android project root:
 
 ```bash
 ~/.codex/skills/android-mobile-config/scripts/android-mobile-config flavors
+~/.codex/skills/android-mobile-config/scripts/android-mobile-config package-name --application-id com.example.app
 ~/.codex/skills/android-mobile-config/scripts/android-mobile-config firebase --mode single --project my-firebase
-~/.codex/skills/android-mobile-config/scripts/android-mobile-config assets
+~/.codex/skills/android-mobile-config/scripts/android-mobile-config assets --type all --image branding/logo.png
 ~/.codex/skills/android-mobile-config/scripts/android-mobile-config network-security
 ```
 
@@ -32,10 +33,12 @@ If `android-mobile-config.json` is missing, each command auto-creates it from th
 - `android-mobile-config init`: create `android-mobile-config.json`; pass `--force` only when intentionally replacing an existing config.
 - `android-mobile-config flavors`: configure product flavors and flavor-specific `app_name` resources.
 - `android-mobile-config validate-flavors`: validate configured flavors and expected task names.
+- `android-mobile-config package-name`: sync `applicationId`, namespace, and Kotlin/Java source package declarations.
+- `android-mobile-config validate-package-name`: validate package-name sync.
 - `android-mobile-config firebase`: configure Firebase `google-services.json` files using Firebase CLI when `firebase.enabled=true` or Firebase flags are provided.
 - `android-mobile-config validate-firebase`: validate Firebase config files, package names, and Google Services Gradle plugin wiring.
-- `android-mobile-config assets`: generate Android assets only when `assets.enabled=true`.
-- `android-mobile-config validate-assets`: validate generated asset resources.
+- `android-mobile-config assets`: generate app icons or splash screens by type.
+- `android-mobile-config validate-assets`: validate generated asset resources by type.
 - `android-mobile-config network-security`: configure network security only when `networkSecurity.enabled=true`.
 - `android-mobile-config validate-network-security`: validate network-security files and manifest references.
 

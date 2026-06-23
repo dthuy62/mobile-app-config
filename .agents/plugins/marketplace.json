@@ -1,14 +1,14 @@
 {
-  "name": "android-mobile-config",
+  "name": "mobile-app-config",
   "interface": {
     "displayName": "Android Mobile Config"
   },
   "plugins": [
     {
-      "name": "android-mobile-config",
+      "name": "mobile-app-config",
       "source": {
         "source": "url",
-        "url": "https://github.com/dthuy62/android-mobile-config.git",
+        "url": "https://github.com/dthuy62/mobile-app-config.git",
         "ref": "main"
       },
       "policy": {

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Android Mobile Config.
+Thanks for helping improve Mobile App Config.
 
 ## Development Setup
 
@@ -12,8 +12,7 @@ python3 scripts/validate_skill.py
 
 ## Guidelines
 
-- Keep deterministic Android edits in `skill/android-mobile-config/scripts/android_mobile_config/`.
+- Keep deterministic Android edits in `skills/android-mobile-config/scripts/android_mobile_config/`.
 - Keep skill instructions concise; move detailed behavior to `references/`.
 - Add or update pytest fixtures for Gradle/resource behavior changes.
 - Run `python3 scripts/build_dist.py` before publishing a release artifact.
-

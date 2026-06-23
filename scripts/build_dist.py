@@ -12,11 +12,11 @@ DIST = ROOT / "dist"
 
 def main() -> int:
     DIST.mkdir(exist_ok=True)
-    out_dir = DIST / "android-mobile-config-skills"
+    out_dir = DIST / "mobile-app-config-skills"
     if out_dir.exists():
         shutil.rmtree(out_dir)
     shutil.copytree(SOURCE, out_dir, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store"))
-    zip_path = DIST / "android-mobile-config-skills.zip"
+    zip_path = DIST / "mobile-app-config-skills.zip"
     if zip_path.exists():
         zip_path.unlink()
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
