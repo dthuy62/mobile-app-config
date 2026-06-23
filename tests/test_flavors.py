@@ -43,3 +43,29 @@ def test_validate_flavors_detects_missing_resource(tmp_path) -> None:
     assert result.returncode == 1
     assert "Missing app_name resource" in result.stderr
 
+
+def test_validate_flavors_checks_gradle_tasks_when_wrapper_exists(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    gradlew = project / "gradlew"
+    gradlew.write_text("#!/bin/sh\nprintf '%s\\n' assembleDevDebug assembleProdDebug\n")
+    gradlew.chmod(0o755)
+    result = run_cli(project, "flavors")
+    assert result.returncode == 0, result.stderr
+
+    result = run_cli(project, "validate-flavors")
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_flavors_reports_missing_gradle_variant_when_wrapper_exists(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    gradlew = project / "gradlew"
+    gradlew.write_text("#!/bin/sh\nprintf '%s\\n' assembleProdDebug\n")
+    gradlew.chmod(0o755)
+    result = run_cli(project, "flavors")
+    assert result.returncode == 0, result.stderr
+
+    result = run_cli(project, "validate-flavors")
+
+    assert result.returncode == 1
+    assert "Gradle does not expose task assembleDevDebug" in result.stderr

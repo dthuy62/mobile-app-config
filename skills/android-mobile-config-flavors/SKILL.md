@@ -19,4 +19,6 @@ Then validate:
 ~/.codex/skills/android-mobile-config/scripts/android-mobile-config validate-flavors
 ```
 
+Run Gradle Sync in Android Studio after generation. Expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
+
 Prefer the script over manual Gradle edits. Re-run once after changes to confirm idempotency when requested.

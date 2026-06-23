@@ -93,12 +93,15 @@ def generate_app_icons(root: Path, config: dict[str, Any]) -> None:
     for folder, size in DENSITIES.items():
         out_dir = res_dir / folder
         out_dir.mkdir(parents=True, exist_ok=True)
+        remove_if_exists(out_dir / "ic_launcher.webp")
+        remove_if_exists(out_dir / "ic_launcher_round.webp")
         icon = padded(image, size, 0.78)
         icon.save(out_dir / "ic_launcher.png")
         icon.save(out_dir / "ic_launcher_round.png")
 
     drawable = res_dir / "drawable"
     drawable.mkdir(parents=True, exist_ok=True)
+    remove_if_exists(drawable / "ic_launcher_foreground.xml")
     padded(image, 432, 0.67).save(drawable / "ic_launcher_foreground.png")
     (drawable / "ic_launcher_background.xml").write_text(color_drawable_xml(background))
 
@@ -126,8 +129,8 @@ def generate_splash_screens(root: Path, config: dict[str, Any]) -> None:
     validate_color(background)
 
     res_dir = resource_dir(root, config)
-    existing_post_theme = current_post_splash_theme(res_dir)
-    parent_theme = existing_post_theme or current_manifest_theme(root, config) or "@style/Theme.App"
+    existing_parent = current_starting_theme_parent(res_dir)
+    parent_theme = existing_parent or current_manifest_theme(root, config) or "@style/Theme.App"
     write_splash_variant(res_dir, image, background, parent_theme, night=False)
     dark_image = splash.get("darkImage", "")
     if dark_image or splash.get("darkBackgroundColor"):
@@ -135,7 +138,7 @@ def generate_splash_screens(root: Path, config: dict[str, Any]) -> None:
         dark_background = splash.get("darkBackgroundColor") or "#000000"
         validate_color(dark_background)
         write_splash_variant(res_dir, dark, dark_background, parent_theme, night=True)
-    update_manifest_theme(root, config, existing_post_theme)
+    update_manifest_theme(root, config, existing_parent)
 
 
 def write_splash_variant(res_dir: Path, image: Any, background: str, parent_theme: str, *, night: bool) -> None:
@@ -166,6 +169,7 @@ def validate_app_icons(root: Path, config: dict[str, Any]) -> list[str]:
         errors.append("Missing adaptive launcher XML")
     if app_icon_config(config).get("monochromeImage") and not (res_dir / "drawable" / "ic_launcher_monochrome.png").exists():
         errors.append("Missing monochrome launcher icon")
+    errors.extend(validate_duplicate_launcher_resources(res_dir))
     return errors
 
 
@@ -299,7 +303,6 @@ def v31_themes_xml(parent_theme: str) -> str:
         f'    <style name="Theme.App.Starting" parent="{parent_theme}">\n'
         '        <item name="android:windowSplashScreenBackground">@color/splash_screen_background</item>\n'
         '        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>\n'
-        f'        <item name="postSplashScreenTheme">{parent_theme}</item>\n'
         "    </style>\n"
         "</resources>\n"
     )
@@ -319,7 +322,7 @@ def merge_colors(path: Path, colors: dict[str, str]) -> None:
     path.write_text(xml_text(root))
 
 
-def update_manifest_theme(root: Path, config: dict[str, Any], existing_post_theme: str | None = None) -> None:
+def update_manifest_theme(root: Path, config: dict[str, Any], existing_parent: str | None = None) -> None:
     path = manifest_path(root, config)
     if not path.exists():
         raise ConfigError(f"Missing AndroidManifest.xml: {path}")
@@ -330,12 +333,11 @@ def update_manifest_theme(root: Path, config: dict[str, Any], existing_post_them
         raise ConfigError("AndroidManifest.xml is missing <application>")
     target = find_launcher_activity(application) or application
     current_theme = target.get(f"{{{ANDROID_NS}}}theme")
-    old_theme = existing_post_theme or current_theme or application.get(f"{{{ANDROID_NS}}}theme") or "@style/Theme.App"
-    if current_theme == "@style/Theme.App.Starting" and existing_post_theme:
-        old_theme = existing_post_theme
+    old_theme = existing_parent or current_theme or application.get(f"{{{ANDROID_NS}}}theme") or "@style/Theme.App"
+    if current_theme == "@style/Theme.App.Starting" and existing_parent:
+        old_theme = existing_parent
     target.set(f"{{{ANDROID_NS}}}theme", "@style/Theme.App.Starting")
     tree.write(path, encoding="unicode", xml_declaration=True)
-    update_post_splash_theme(resource_dir(root, config), old_theme)
 
 
 def find_launcher_activity(application: ET.Element) -> ET.Element | None:
@@ -348,20 +350,14 @@ def find_launcher_activity(application: ET.Element) -> ET.Element | None:
     return None
 
 
-def update_post_splash_theme(res_dir: Path, old_theme: str) -> None:
-    replacement = f'<item name="postSplashScreenTheme">{old_theme}</item>'
-    for path in [res_dir / "values-v31" / "themes.xml", res_dir / "values-night-v31" / "themes.xml"]:
-        if path.exists():
-            text = re.sub(r'<item name="postSplashScreenTheme">[^<]+</item>', replacement, path.read_text())
-            path.write_text(text)
-
-
-def current_post_splash_theme(res_dir: Path) -> str | None:
-    path = res_dir / "values-v31" / "themes.xml"
-    if not path.exists():
-        return None
-    match = re.search(r'<item name="postSplashScreenTheme">([^<]+)</item>', path.read_text())
-    return match.group(1) if match else None
+def current_starting_theme_parent(res_dir: Path) -> str | None:
+    for path in [res_dir / "values-v31" / "themes.xml", res_dir / "values" / "themes.xml"]:
+        if not path.exists():
+            continue
+        match = re.search(r'<style\s+name="Theme\.App\.Starting"\s+parent="([^"]+)"', path.read_text())
+        if match:
+            return match.group(1)
+    return None
 
 
 def current_manifest_theme(root: Path, config: dict[str, Any]) -> str | None:
@@ -380,6 +376,25 @@ def current_manifest_theme(root: Path, config: dict[str, Any]) -> str | None:
 def has_dark_splash(config: dict[str, Any]) -> bool:
     splash = splash_config(config)
     return bool(splash.get("darkImage") or splash.get("darkBackgroundColor"))
+
+
+def remove_if_exists(path: Path) -> None:
+    if path.exists():
+        path.unlink()
+
+
+def validate_duplicate_launcher_resources(res_dir: Path) -> list[str]:
+    errors: list[str] = []
+    for folder in DENSITIES:
+        folder_path = res_dir / folder
+        if (folder_path / "ic_launcher.png").exists() and (folder_path / "ic_launcher.webp").exists():
+            errors.append(f"Duplicate launcher resource {folder}/ic_launcher")
+        if (folder_path / "ic_launcher_round.png").exists() and (folder_path / "ic_launcher_round.webp").exists():
+            errors.append(f"Duplicate launcher resource {folder}/ic_launcher_round")
+    drawable = res_dir / "drawable"
+    if (drawable / "ic_launcher_foreground.png").exists() and (drawable / "ic_launcher_foreground.xml").exists():
+        errors.append("Duplicate launcher resource drawable/ic_launcher_foreground")
+    return errors
 
 
 def xml_text(root: ET.Element) -> str:

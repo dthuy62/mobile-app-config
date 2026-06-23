@@ -9,6 +9,7 @@ def test_missing_config_flavors_auto_init_continues(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     config = read_config(project)
     assert config["module"] == "app"
+    assert config["dimension"] == "environment"
     assert "dev" in config["flavors"]
     assert 'create("dev")' in (project / "app" / "build.gradle.kts").read_text()
 
@@ -56,7 +57,7 @@ def test_existing_flavors_are_detected(tmp_path) -> None:
     result = run_cli(project, "init", "--force")
     assert result.returncode == 0, result.stderr
     config = read_config(project)
+    # Compatibility: preserve the project's legacy typo instead of rewriting Gradle.
     assert config["dimension"] == "evironment"
     assert config["flavors"]["dev"]["applicationIdSuffix"] == ".dev"
     assert config["flavors"]["dev"]["buildConfigFields"]["CAREER_OPS_ENVIRONMENT"] == "dev"
-

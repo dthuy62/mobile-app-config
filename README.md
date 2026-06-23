@@ -197,6 +197,8 @@ mobile-app-config validate-network-security
 
 `android-mobile-config` remains available as a backward-compatible CLI alias.
 
+After running `mobile-app-config flavors`, run Gradle Sync in Android Studio. The expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
+
 ### Package name sync
 
 Change the base Android package/application ID and sync source packages:
@@ -243,7 +245,9 @@ mobile-app-config assets --type splash-screens \
   --dark-background-color '#000000'
 ```
 
-App icons include legacy `mipmap-*` PNGs, adaptive icon XML/resources for Android 8+, and optional monochrome themed icons for Android 13+ launchers. Splash screens use Android 12+ platform splash attrs plus legacy `windowBackground` resources for older Android. Android 12+ splash screens are icon plus background, not full-screen artwork.
+App icons include legacy `mipmap-*` PNGs, adaptive icon XML/resources for Android 8+, and optional monochrome themed icons for Android 13+ launchers. Generated PNG launcher resources replace stale same-name WebP/XML launcher resources.
+
+Splash screens use Android 12+ platform splash attrs plus legacy `windowBackground` resources for Android 11 and below. Android 12+ splash screens are icon plus background, not full-screen artwork. The plugin does not add AndroidX SplashScreen or call `installSplashScreen()`.
 
 ### Firebase multi-flavor setup
 

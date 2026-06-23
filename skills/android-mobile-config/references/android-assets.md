@@ -28,6 +28,6 @@ The source image must be at least 432x432 pixels. The generator pads and resizes
 - optional night resources when `--dark-image` or `--dark-background-color` is provided
 - launcher Activity manifest theme, falling back to the application theme when no launcher Activity exists
 
-Android 12+ platform splash screens are icon plus background, not full-screen artwork. This command does not patch Kotlin or Java and does not add `installSplashScreen()`.
+Android 12+ platform splash screens are icon plus background, not full-screen artwork. This command does not patch Kotlin or Java, does not add AndroidX SplashScreen, and does not call `installSplashScreen()`.
 
 Use Pillow for image processing. If Pillow is unavailable, fail with an install hint instead of silently producing incomplete assets.

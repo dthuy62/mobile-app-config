@@ -27,6 +27,7 @@ If `android-mobile-config.json` is missing, each command auto-creates it from th
 2. Run the relevant script instead of hand-editing generated sections.
 3. Run the matching validation command or Android Gradle task.
 4. Re-run the command when checking idempotency; the second run should not duplicate Gradle blocks, resource files, or manifest attributes.
+5. After flavor generation, run Gradle Sync in Android Studio; expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
 
 ## Commands
 
@@ -41,6 +42,8 @@ If `android-mobile-config.json` is missing, each command auto-creates it from th
 - `android-mobile-config validate-assets`: validate generated asset resources by type.
 - `android-mobile-config network-security`: configure network security only when `networkSecurity.enabled=true`.
 - `android-mobile-config validate-network-security`: validate network-security files and manifest references.
+
+Splash resources use Android 12+ platform attrs and Android 11-and-below `windowBackground`. This plugin does not add AndroidX SplashScreen or call `installSplashScreen()`.
 
 ## References
 

@@ -37,6 +37,15 @@ def test_assets_app_icons_generate_modern_outputs(tmp_path) -> None:
     project = copy_fixture(tmp_path, "kotlin_basic_app")
     logo = write_image(project / "branding" / "logo.png")
     mono = write_image(project / "branding" / "mono.png")
+    res = project / "app" / "src" / "main" / "res"
+    for folder in ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"]:
+        legacy = res / folder
+        legacy.mkdir(parents=True, exist_ok=True)
+        (legacy / "ic_launcher.webp").write_bytes(b"legacy")
+        (legacy / "ic_launcher_round.webp").write_bytes(b"legacy")
+    drawable = res / "drawable"
+    drawable.mkdir(parents=True, exist_ok=True)
+    (drawable / "ic_launcher_foreground.xml").write_text("<vector />\n")
 
     result = run_cli(
         project,
@@ -52,10 +61,12 @@ def test_assets_app_icons_generate_modern_outputs(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    res = project / "app" / "src" / "main" / "res"
     assert_png_size(res / "mipmap-mdpi" / "ic_launcher.png", (48, 48))
     assert_png_size(res / "mipmap-xxxhdpi" / "ic_launcher_round.png", (192, 192))
     assert_png_size(res / "drawable" / "ic_launcher_foreground.png", (432, 432))
+    assert not list(res.glob("mipmap-*/ic_launcher.webp"))
+    assert not list(res.glob("mipmap-*/ic_launcher_round.webp"))
+    assert not (res / "drawable" / "ic_launcher_foreground.xml").exists()
     assert 'android:color="#112233"' in (res / "drawable" / "ic_launcher_background.xml").read_text()
     adaptive = (res / "mipmap-anydpi-v26" / "ic_launcher.xml").read_text()
     assert "@drawable/ic_launcher_foreground" in adaptive
@@ -66,6 +77,24 @@ def test_assets_app_icons_generate_modern_outputs(tmp_path) -> None:
     second = run_cli(project, "assets", "--type", "app-icons")
     assert second.returncode == 0, second.stderr
     assert snapshot_files(res) == before
+
+
+def test_assets_validate_detects_duplicate_launcher_resources(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_basic_app")
+    logo = write_image(project / "branding" / "logo.png")
+    result = run_cli(project, "assets", "--type", "app-icons", "--image", str(logo.relative_to(project)))
+    assert result.returncode == 0, result.stderr
+    res = project / "app" / "src" / "main" / "res"
+    (res / "mipmap-mdpi" / "ic_launcher.webp").write_bytes(b"legacy")
+    (res / "mipmap-hdpi" / "ic_launcher_round.webp").write_bytes(b"legacy")
+    (res / "drawable" / "ic_launcher_foreground.xml").write_text("<vector />\n")
+
+    result = run_cli(project, "validate-assets", "--type", "app-icons")
+
+    assert result.returncode == 1
+    assert "Duplicate launcher resource mipmap-mdpi/ic_launcher" in result.stderr
+    assert "Duplicate launcher resource mipmap-hdpi/ic_launcher_round" in result.stderr
+    assert "Duplicate launcher resource drawable/ic_launcher_foreground" in result.stderr
 
 
 def test_assets_splash_screens_generate_theme_and_manifest(tmp_path) -> None:
@@ -113,10 +142,12 @@ def test_assets_splash_screens_generate_theme_and_manifest(tmp_path) -> None:
     themes = (res / "values-v31" / "themes.xml").read_text()
     assert "android:windowSplashScreenBackground" in themes
     assert "android:windowSplashScreenAnimatedIcon" in themes
-    assert "postSplashScreenTheme" in themes
+    assert "postSplashScreenTheme" not in themes
     assert "@style/ExistingTheme" in themes
     assert 'parent="@style/ExistingTheme"' in themes
-    assert 'parent="@style/ExistingTheme"' in (res / "values" / "themes.xml").read_text()
+    legacy_themes = (res / "values" / "themes.xml").read_text()
+    assert 'parent="@style/ExistingTheme"' in legacy_themes
+    assert "android:windowBackground" in legacy_themes
 
     before = snapshot_files(res)
     second = run_cli(project, "assets", "--type", "splash-screens")

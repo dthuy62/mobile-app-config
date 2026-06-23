@@ -25,3 +25,7 @@ Direct CLI form from an Android project root:
 ~/.codex/skills/android-mobile-config/scripts/android-mobile-config assets
 ~/.codex/skills/android-mobile-config/scripts/android-mobile-config network-security
 ```
+
+After flavor generation, run Gradle Sync in Android Studio. Expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
+
+Splash generation uses Android 12+ platform attrs and Android 11-and-below `windowBackground`; it does not add AndroidX SplashScreen.

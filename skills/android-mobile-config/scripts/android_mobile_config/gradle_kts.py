@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +47,7 @@ def validate_flavors(root: Path, config: dict[str, Any]) -> list[str]:
         strings_path = root / module / "src" / flavor / "res" / "values" / "strings.xml"
         if not strings_path.exists():
             errors.append(f"Missing app_name resource for {flavor!r}")
+    errors.extend(validate_gradle_variant_tasks(root, config))
     return errors
 
 
@@ -77,6 +79,31 @@ def validate_google_services_gradle(root: Path, config: dict[str, Any]) -> list[
 
 def expected_tasks(config: dict[str, Any]) -> list[str]:
     return [f"assemble{flavor[:1].upper()}{flavor[1:]}Debug" for flavor in config["flavors"]]
+
+
+def validate_gradle_variant_tasks(root: Path, config: dict[str, Any]) -> list[str]:
+    wrapper = root / "gradlew"
+    if not wrapper.exists():
+        return []
+    try:
+        result = subprocess.run(
+            [str(wrapper), f":{config['module']}:tasks", "--all"],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=60,
+        )
+    except OSError as exc:
+        return [f"Cannot run Gradle wrapper: {exc}"]
+    except subprocess.TimeoutExpired:
+        return ["Gradle task validation timed out"]
+    if result.returncode != 0:
+        message = (result.stderr or result.stdout).strip().splitlines()
+        detail = f": {message[0]}" if message else ""
+        return [f"Gradle task validation failed{detail}"]
+    tasks = result.stdout
+    return [f"Gradle does not expose task {task}" for task in expected_tasks(config) if task not in tasks]
 
 
 def infer_application_id(root: Path, config: dict[str, Any]) -> str:

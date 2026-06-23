@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mobile-app-config-skill"
-version = "0.3.0"
+version = "0.4.0"
 description = "Portable Agent Skill for Android product flavors, Firebase, package names, assets, and network security."
 requires-python = ">=3.9"
 dependencies = []

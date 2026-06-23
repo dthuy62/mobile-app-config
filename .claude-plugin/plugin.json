@@ -1,6 +1,6 @@
 {
   "name": "mobile-app-config",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Configure mobile app package names, Android flavors, Firebase, app assets, and optional network security from agent workflows.",
   "author": {
     "name": "dthuy62",

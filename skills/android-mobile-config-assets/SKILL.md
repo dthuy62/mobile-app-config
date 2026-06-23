@@ -22,3 +22,5 @@ Then validate:
 ```
 
 Asset generation is disabled by default. Passing `--image` enables the selected type. Existing `assets.sourceIcon` remains supported for older configs.
+
+Splash resources use Android 12+ platform attrs and Android 11-and-below `windowBackground`. This plugin does not add AndroidX SplashScreen or call `installSplashScreen()`.
