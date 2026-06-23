@@ -80,14 +80,23 @@ def configure_package_name(root: Path, config: dict[str, Any], application_id: s
     target = application_id or config.get("packageName", {}).get("applicationId", "")
     if not is_valid_application_id(target):
         raise ConfigError(f"Invalid applicationId: {target}")
-    old = infer_application_id(root, config)
     gradle_path = root / config["module"] / "build.gradle.kts"
-    gradle_path.write_text(update_gradle_package(gradle_path.read_text(), target))
-    if config.get("packageName", {}).get("syncSourcePackages", True):
-        sync_sources(root / config["module"] / "src", old, target)
+    if not gradle_path.exists():
+        raise ConfigError(f"Missing Kotlin Gradle file: {gradle_path}")
+    gradle_text = gradle_path.read_text()
+    old_application_id = infer_application_id(root, config)
+    src = root / config["module"] / "src"
+    old_source_package = old_application_id
+    sync_source_packages = config.get("packageName", {}).get("syncSourcePackages", True)
+    if sync_source_packages and source_files(src):
+        old_source_package = resolve_source_package(extract_namespace(gradle_text), source_package_declarations(src))
+    updated_gradle_text = update_gradle_package(gradle_text, target)
+    if sync_source_packages:
+        sync_sources(src, old_source_package, target)
+    gradle_path.write_text(updated_gradle_text)
     config.setdefault("packageName", {})["applicationId"] = target
     write_config(config_path(root), config)
-    return f"package name configured: {old} -> {target}"
+    return f"package name configured: {old_application_id} -> {target}"
 
 
 def validate_package_name(root: Path, config: dict[str, Any]) -> list[str]:
@@ -99,18 +108,77 @@ def validate_package_name(root: Path, config: dict[str, Any]) -> list[str]:
     if not gradle_path.exists():
         return [f"Missing Kotlin Gradle file: {gradle_path}"]
     text = gradle_path.read_text()
-    if f'applicationId = "{target}"' not in text:
+    try:
+        application_id = infer_application_id(root, config)
+    except ConfigError as exc:
+        errors.append(str(exc))
+        application_id = ""
+    if application_id != target:
         errors.append(f"applicationId does not match {target}")
-    if f'namespace = "{target}"' not in text:
+    if extract_namespace(text) != target:
         errors.append(f"namespace does not match {target}")
     src = root / config["module"] / "src"
-    for path in source_files(src):
+    files = source_files(src)
+    packages = source_package_declarations(src)
+    if config.get("packageName", {}).get("syncSourcePackages", True) and files and not packages:
+        errors.append("No source package declarations found")
+    for path in files:
         for line in path.read_text().splitlines():
             match = re.match(r"\s*package\s+([A-Za-z_][\w.]*);?", line)
             if match and not (match.group(1) == target or match.group(1).startswith(target + ".")):
                 errors.append(f"Stale package declaration in {path}")
                 break
     return errors
+
+
+def extract_namespace(text: str) -> str | None:
+    match = re.search(r'namespace\s*=\s*"([^"]+)"', text)
+    return match.group(1) if match else None
+
+
+def source_package_declarations(src: Path) -> list[str]:
+    packages: list[str] = []
+    for path in source_files(src):
+        for line in path.read_text().splitlines():
+            match = re.match(r"\s*package\s+([A-Za-z_][\w.]*);?", line)
+            if match:
+                packages.append(match.group(1))
+                break
+    return packages
+
+
+def resolve_source_package(namespace: str | None, packages: list[str]) -> str:
+    if not packages:
+        raise ConfigError("Cannot infer source package: no source package declarations found")
+    if namespace and any(package_is_under(package, namespace) for package in packages):
+        if all(package_is_under(package, namespace) for package in packages):
+            return namespace
+        detail = ", ".join(sorted(set(packages)))
+        raise ConfigError(f"Cannot infer source package from declarations: {detail}")
+    common = common_package_prefix(packages)
+    if common:
+        return common
+    detail = ", ".join(sorted(set(packages)))
+    raise ConfigError(f"Cannot infer source package from declarations: {detail}")
+
+
+def package_is_under(package: str, root: str) -> bool:
+    return package == root or package.startswith(root + ".")
+
+
+def common_package_prefix(packages: list[str]) -> str | None:
+    split = [package.split(".") for package in packages]
+    common: list[str] = []
+    for parts in zip(*split):
+        if len(set(parts)) != 1:
+            break
+        common.append(parts[0])
+    if len(common) < 2:
+        return None
+    root = ".".join(common)
+    if all(package_is_under(package, root) for package in packages):
+        return root
+    return None
 
 
 def update_gradle_package(text: str, application_id: str) -> str:

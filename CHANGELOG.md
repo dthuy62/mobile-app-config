@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+- Fixed `package-name` to sync divergent Android identities by resolving source packages from Gradle namespace and Kotlin/Java declarations.
+- Added fail-fast handling for ambiguous source package roots before source rewrites.
+- Added regression coverage for divergent package sync, validation errors, idempotency, and partial-write preflight.
+
 ## 0.3.0
 
 - Added `package-name` and `validate-package-name` commands for syncing `applicationId`, namespace, and source packages.
