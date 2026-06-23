@@ -1,5 +1,5 @@
 interface:
-  display_name: "Android Mobile Config: Help"
-  short_description: "Show Android Mobile Config commands"
-  default_prompt: "Use $android-mobile-config-help to show available Android Mobile Config commands."
+  display_name: "Mobile App Config: Help"
+  short_description: "Show Mobile App Config commands"
+  default_prompt: "Use $android-mobile-config-help to show available Mobile App Config commands."
 

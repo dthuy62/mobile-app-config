@@ -31,6 +31,17 @@ def test_plugin_manifests_exist() -> None:
     assert (ROOT / ".agents" / "plugins" / "marketplace.json").exists()
 
 
+def test_plugin_brand_is_mobile_app_config() -> None:
+    import json
+
+    codex = json.loads((ROOT / ".codex-plugin" / "plugin.json").read_text())
+    claude = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())
+    assert codex["name"] == "mobile-app-config"
+    assert claude["name"] == "mobile-app-config"
+    assert "mobile-app-config" in (ROOT / "pyproject.toml").read_text()
+    assert (ROOT / "skills" / "android-mobile-config" / "scripts" / "mobile-app-config").exists()
+
+
 def test_build_dist_contains_only_portable_skill_files() -> None:
     result = subprocess.run(
         ["python3", str(ROOT / "scripts" / "build_dist.py")],
@@ -40,13 +51,13 @@ def test_build_dist_contains_only_portable_skill_files() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    zip_path = ROOT / "dist" / "android-mobile-config-skills.zip"
+    zip_path = ROOT / "dist" / "mobile-app-config-skills.zip"
     with zipfile.ZipFile(zip_path) as archive:
         names = archive.namelist()
-    assert "android-mobile-config-skills/android-mobile-config/SKILL.md" in names
-    assert "android-mobile-config-skills/android-mobile-config-flavors/SKILL.md" in names
-    assert "android-mobile-config-skills/android-mobile-config-firebase/SKILL.md" in names
-    assert "android-mobile-config-skills/android-mobile-config-assets/SKILL.md" in names
+    assert "mobile-app-config-skills/android-mobile-config/SKILL.md" in names
+    assert "mobile-app-config-skills/android-mobile-config-flavors/SKILL.md" in names
+    assert "mobile-app-config-skills/android-mobile-config-firebase/SKILL.md" in names
+    assert "mobile-app-config-skills/android-mobile-config-assets/SKILL.md" in names
     assert all("/tests/" not in name for name in names)
     assert all("__pycache__" not in name for name in names)
     assert all(not name.endswith(".pyc") for name in names)

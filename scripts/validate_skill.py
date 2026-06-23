@@ -53,6 +53,7 @@ def validate_one_skill(skill: Path, skill_name: str, errors: list[str]) -> None:
     if skill_name == CANONICAL:
         required.extend([
             "scripts/android-mobile-config",
+            "scripts/mobile-app-config",
             "scripts/android_mobile_config/cli.py",
             "scripts/android_mobile_config/config.py",
             "scripts/android_mobile_config/gradle_kts.py",

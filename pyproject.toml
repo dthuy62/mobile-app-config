@@ -3,14 +3,15 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "android-mobile-config-skill"
-version = "0.2.0"
-description = "Portable Agent Skill for Android product flavors, Firebase, assets, and network security."
+name = "mobile-app-config-skill"
+version = "0.3.0"
+description = "Portable Agent Skill for Android product flavors, Firebase, package names, assets, and network security."
 requires-python = ">=3.9"
 dependencies = []
 
 [project.scripts]
 android-mobile-config = "android_mobile_config.cli:main"
+mobile-app-config = "android_mobile_config.cli:main"
 
 [project.optional-dependencies]
 assets = ["Pillow>=10"]

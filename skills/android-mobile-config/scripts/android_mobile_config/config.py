@@ -30,6 +30,10 @@ DEFAULT_CONFIG: dict[str, Any] = {
         },
     },
     "networkSecurity": {"enabled": False},
+    "packageName": {
+        "applicationId": "",
+        "syncSourcePackages": True,
+    },
     "firebase": {
         "enabled": False,
         "mode": "single",
@@ -43,6 +47,18 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "assets": {
         "enabled": False,
         "sourceIcon": "",
+        "types": ["app-icons"],
+        "appIcons": {
+            "image": "",
+            "backgroundColor": "#FFFFFF",
+            "monochromeImage": "",
+        },
+        "splashScreens": {
+            "image": "",
+            "backgroundColor": "#FFFFFF",
+            "darkImage": "",
+            "darkBackgroundColor": "",
+        },
         "generateLauncherIcon": True,
         "generateAdaptiveIcon": True,
         "generateSplashIcon": True,

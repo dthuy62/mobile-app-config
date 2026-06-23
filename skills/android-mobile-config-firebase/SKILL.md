@@ -3,7 +3,7 @@ name: android-mobile-config-firebase
 description: Configure Firebase multi-flavor google-services.json files with android-mobile-config. Use when the user says "/android-mobile-config-firebase", "/android-mobile-config firebase", "android mobile config firebase", or asks to set up Firebase for Android flavors.
 ---
 
-# Android Mobile Config Firebase
+# Mobile App Config Firebase
 
 Configure Firebase from the Android project root. The command uses Firebase CLI local login only.
 

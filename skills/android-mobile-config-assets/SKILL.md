@@ -1,22 +1,24 @@
 ---
 name: android-mobile-config-assets
-description: Generate or validate Android launcher, adaptive, splash, and notification assets with android-mobile-config. Use when the user says "/android-mobile-config-assets", "/android-mobile-config assets", "android mobile config assets", or asks to generate Android app icons, splash assets, adaptive icons, or notification icons.
+description: Generate or validate Android app icons and splash screen resources with android-mobile-config. Use when the user says "/android-mobile-config-assets", "/android-mobile-config assets", "android mobile config assets", or asks to generate Android app icons, adaptive icons, themed icons, or splash screens.
 ---
 
-# Android Mobile Config Assets
+# Mobile App Config Assets
 
 Generate Android assets from the project root. If `android-mobile-config.json` is missing, the script auto-creates it first.
 
 Run the canonical skill CLI from the Android project root:
 
 ```bash
-~/.codex/skills/android-mobile-config/scripts/android-mobile-config assets
+~/.codex/skills/android-mobile-config/scripts/android-mobile-config assets --type app-icons --image branding/logo.png
+~/.codex/skills/android-mobile-config/scripts/android-mobile-config assets --type splash-screens --image branding/splash.png
+~/.codex/skills/android-mobile-config/scripts/android-mobile-config assets --type all --image branding/logo.png
 ```
 
 Then validate:
 
 ```bash
-~/.codex/skills/android-mobile-config/scripts/android-mobile-config validate-assets
+~/.codex/skills/android-mobile-config/scripts/android-mobile-config validate-assets --type all
 ```
 
-Asset generation is disabled by default. Enable `assets.enabled=true` and set `assets.sourceIcon` before expecting generated images.
+Asset generation is disabled by default. Passing `--image` enables the selected type. Existing `assets.sourceIcon` remains supported for older configs.

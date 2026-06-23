@@ -27,6 +27,10 @@ The default config file is `android-mobile-config.json` in the Android project r
   "networkSecurity": {
     "enabled": false
   },
+  "packageName": {
+    "applicationId": "",
+    "syncSourcePackages": true
+  },
   "firebase": {
     "enabled": false,
     "mode": "single",
@@ -44,6 +48,18 @@ The default config file is `android-mobile-config.json` in the Android project r
   "assets": {
     "enabled": false,
     "sourceIcon": "",
+    "types": ["app-icons"],
+    "appIcons": {
+      "image": "",
+      "backgroundColor": "#FFFFFF",
+      "monochromeImage": ""
+    },
+    "splashScreens": {
+      "image": "",
+      "backgroundColor": "#FFFFFF",
+      "darkImage": "",
+      "darkBackgroundColor": ""
+    },
     "generateLauncherIcon": true,
     "generateAdaptiveIcon": true,
     "generateSplashIcon": true,
@@ -64,4 +80,18 @@ Firebase per-flavor mode:
 
 ```bash
 android-mobile-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+```
+
+Package name sync:
+
+```bash
+android-mobile-config package-name --application-id com.aistudio.taskarena.kymzap
+```
+
+Typed asset generation:
+
+```bash
+android-mobile-config assets --type app-icons --image branding/logo.png
+android-mobile-config assets --type splash-screens --image branding/splash.png
+android-mobile-config assets --type all --image branding/logo.png
 ```
