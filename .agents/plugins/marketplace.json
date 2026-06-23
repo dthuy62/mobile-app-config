@@ -1,7 +1,7 @@
 {
   "name": "mobile-app-config",
   "interface": {
-    "displayName": "Android Mobile Config"
+    "displayName": "Mobile App Config"
   },
   "plugins": [
     {
