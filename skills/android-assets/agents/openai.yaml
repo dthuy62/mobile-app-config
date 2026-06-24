@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mobile App Config: Assets"
+  short_description: "Generate Android app assets"
+  default_prompt: "Use $android-assets to generate app icons and splash screen resources."

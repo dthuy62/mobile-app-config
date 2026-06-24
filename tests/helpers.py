@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CLI = ROOT / "skills" / "android-mobile-config" / "scripts" / "android-mobile-config"
+CLI = ROOT / "skills" / "android" / "scripts" / "mobile-app-config"
 
 
 def copy_fixture(tmp_path: Path, name: str) -> Path:
@@ -29,4 +29,4 @@ def run_cli(project: Path, *args: str, env: dict[str, str] | None = None) -> sub
 
 
 def read_config(project: Path) -> dict:
-    return json.loads((project / "android-mobile-config.json").read_text())
+    return json.loads((project / "android-app-config.json").read_text())

@@ -11,15 +11,15 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_ROOT = ROOT / "skills"
-CANONICAL = "android-mobile-config"
+CANONICAL = "android"
 SKILL_NAMES = [
-    "android-mobile-config",
-    "android-mobile-config-init",
-    "android-mobile-config-flavors",
-    "android-mobile-config-firebase",
-    "android-mobile-config-assets",
-    "android-mobile-config-network-security",
-    "android-mobile-config-help",
+    "android",
+    "android-init",
+    "android-flavors",
+    "android-firebase",
+    "android-assets",
+    "android-network-security",
+    "android-help",
 ]
 
 
@@ -52,7 +52,6 @@ def validate_one_skill(skill: Path, skill_name: str, errors: list[str]) -> None:
     required = ["agents/openai.yaml"]
     if skill_name == CANONICAL:
         required.extend([
-            "scripts/android-mobile-config",
             "scripts/mobile-app-config",
             "scripts/android_mobile_config/cli.py",
             "scripts/android_mobile_config/config.py",

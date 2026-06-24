@@ -1,4 +1,0 @@
-interface:
-  display_name: "Mobile App Config: Firebase"
-  short_description: "Configure Firebase for Android flavors"
-  default_prompt: "Use $android-mobile-config-firebase to configure Firebase google-services.json files for Android flavors."

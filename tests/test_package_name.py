@@ -54,6 +54,83 @@ def test_package_name_updates_gradle_and_sources(tmp_path) -> None:
     assert read_config(project)["packageName"]["applicationId"] == "com.aistudio.taskarena.kymzap"
 
 
+def test_package_name_app_name_updates_main_and_flavor_resources(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_existing_flavors_app")
+    main_strings = project / "app" / "src" / "main" / "res" / "values" / "strings.xml"
+    main_strings.write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        "<resources>\n"
+        '    <string name="app_name">Career Ops</string>\n'
+        '    <string name="keep_me">Keep me</string>\n'
+        "</resources>\n"
+    )
+
+    result = run_cli(project, "package-name", "--application-id", "me.dthuy.careerops", "--app-name", "My App")
+
+    assert result.returncode == 0, result.stderr
+    assert "<string name=\"app_name\">My App</string>" in main_strings.read_text()
+    assert "<string name=\"keep_me\">Keep me</string>" in main_strings.read_text()
+    assert "<string name=\"app_name\">[DEV] My App</string>" in (
+        project / "app" / "src" / "dev" / "res" / "values" / "strings.xml"
+    ).read_text()
+    assert "<string name=\"app_name\">My App</string>" in (
+        project / "app" / "src" / "prod" / "res" / "values" / "strings.xml"
+    ).read_text()
+    config = read_config(project)
+    assert config["flavors"]["dev"]["appName"] == "[DEV] My App"
+    assert config["flavors"]["prod"]["appName"] == "My App"
+    assert config["flavors"]["staging"]["appName"] == "[STAGING] Career Ops"
+
+
+def test_package_name_root_project_name_updates_settings(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+
+    result = run_cli(
+        project,
+        "package-name",
+        "--application-id",
+        "me.dthuy.careerops",
+        "--root-project-name",
+        "My App",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert 'rootProject.name = "My App"' in (project / "settings.gradle.kts").read_text()
+
+
+def test_package_name_without_metadata_flags_leaves_app_name_and_root_project_name(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    strings = project / "app" / "src" / "main" / "res" / "values" / "strings.xml"
+    settings = project / "settings.gradle.kts"
+    before = (strings.read_text(), settings.read_text())
+
+    result = run_cli(project, "package-name", "--application-id", "me.dthuy.careerops")
+
+    assert result.returncode == 0, result.stderr
+    assert (strings.read_text(), settings.read_text()) == before
+
+
+def test_package_name_root_project_name_preflights_before_writes(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    settings = project / "settings.gradle.kts"
+    settings.write_text(settings.read_text().replace('rootProject.name = "No Flavors Fixture"\n', ""))
+    gradle = project / "app" / "build.gradle.kts"
+    before = (settings.read_text(), gradle.read_text())
+
+    result = run_cli(
+        project,
+        "package-name",
+        "--application-id",
+        "me.dthuy.careerops",
+        "--root-project-name",
+        "My App",
+    )
+
+    assert result.returncode == 2
+    assert "Cannot find rootProject.name in settings.gradle.kts" in result.stderr
+    assert (settings.read_text(), gradle.read_text()) == before
+
+
 def test_package_name_rejects_invalid_package(tmp_path) -> None:
     project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
 
@@ -69,7 +146,7 @@ def test_package_name_is_idempotent_and_updates_firebase_packages(tmp_path) -> N
     first = run_cli(project, "package-name", "--application-id", "com.aistudio.taskarena.kymzap")
     assert first.returncode == 0, first.stderr
     gradle = project / "app" / "build.gradle.kts"
-    config = project / "android-mobile-config.json"
+    config = project / "android-app-config.json"
     before = (gradle.read_text(), config.read_text())
     second = run_cli(project, "package-name", "--application-id", "com.aistudio.taskarena.kymzap")
     assert second.returncode == 0, second.stderr
@@ -152,7 +229,7 @@ def test_package_name_rejects_ambiguous_source_packages_before_writes(tmp_path) 
     first.write_text("package com.foo\n")
     second.write_text("package org.bar\n")
     gradle = project / "app" / "build.gradle.kts"
-    config = project / "android-mobile-config.json"
+    config = project / "android-app-config.json"
     before = (gradle.read_text(), first.read_text(), second.read_text(), config.read_text() if config.exists() else None)
 
     result = run_cli(project, "package-name", "--application-id", "me.dthuy.careerops")

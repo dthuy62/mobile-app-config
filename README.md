@@ -9,22 +9,22 @@ The plugin is designed for Codex Marketplace distribution first. Claude Code and
 - Configure Kotlin Gradle Android product flavors idempotently.
 - Create and validate `dev` and `prod` variants.
 - Generate flavor-specific `app_name` resources.
-- Add `applicationIdSuffix` and `BuildConfig` fields from `android-mobile-config.json`.
+- Add `applicationIdSuffix` and `BuildConfig` fields from config or inferred defaults.
 - Sync Android `applicationId`, namespace, and Kotlin/Java source package declarations.
 - Configure Firebase `google-services.json` for one shared Firebase project or one project per flavor.
 - Create missing Firebase Android apps only when explicitly requested.
-- Auto-create `android-mobile-config.json` from the current Android project when it is missing.
+- Create `android-app-config.json` only when initializing or persisting explicit options.
 - Generate legacy launcher icons, adaptive icons, optional themed icons, and XML-only splash screens.
 - Configure Android network-security XML only when explicitly enabled.
 - Refuse broad production cleartext traffic unless explicitly allowed.
 - Expose focused command-style skills:
-  - `$android-mobile-config`
-  - `$android-mobile-config-init`
-  - `$android-mobile-config-flavors`
-  - `$android-mobile-config-firebase`
-  - `$android-mobile-config-assets`
-  - `$android-mobile-config-network-security`
-  - `$android-mobile-config-help`
+  - `$android`
+  - `$android-init`
+  - `$android-flavors`
+  - `$android-firebase`
+  - `$android-assets`
+  - `$android-network-security`
+  - `$android-help`
 
 ## Prerequisites
 
@@ -112,7 +112,7 @@ If you only want the skills and not the plugin wrapper:
 
 ```bash
 mkdir -p ~/.claude/skills
-cp -R skills/android-mobile-config* ~/.claude/skills/
+cp -R skills/android* ~/.claude/skills/
 ```
 
 Restart Claude Code after copying.
@@ -134,16 +134,16 @@ This symlinks every skill folder into `~/.codex/skills`.
 For tools such as Cursor, Antigravity, or other agent hosts, use the skill folders directly:
 
 ```text
-skills/android-mobile-config/
-skills/android-mobile-config-init/
-skills/android-mobile-config-flavors/
-skills/android-mobile-config-firebase/
-skills/android-mobile-config-assets/
-skills/android-mobile-config-network-security/
-skills/android-mobile-config-help/
+skills/android/
+skills/android-init/
+skills/android-flavors/
+skills/android-firebase/
+skills/android-assets/
+skills/android-network-security/
+skills/android-help/
 ```
 
-If the host does not support skills, point its project rules or agent instructions at `skills/android-mobile-config/SKILL.md` and run the bundled CLI from the Android project root.
+If the host does not support skills, point its project rules or agent instructions at `skills/android/SKILL.md` and run the bundled CLI from the Android project root.
 
 ### Project-Specific
 
@@ -153,14 +153,14 @@ Codex-style project install:
 
 ```bash
 mkdir -p .codex/skills
-cp -R /path/to/android-mobile-config/skills/android-mobile-config* .codex/skills/
+cp -R /path/to/mobile-app-config/skills/android* .codex/skills/
 ```
 
 Claude-style project install:
 
 ```bash
 mkdir -p .claude/skills
-cp -R /path/to/android-mobile-config/skills/android-mobile-config* .claude/skills/
+cp -R /path/to/mobile-app-config/skills/android* .claude/skills/
 ```
 
 Project-specific installs are useful for teams that want Android setup automation checked into the app repository.
@@ -170,12 +170,12 @@ Project-specific installs are useful for teams that want Android setup automatio
 From Codex, invoke one of the skills:
 
 ```text
-Use $android-mobile-config-flavors to configure dev and prod flavors.
-Use $android-mobile-config to change Android package/applicationId.
-Use $android-mobile-config-firebase to configure Firebase for Android flavors.
-Use $android-mobile-config-assets to generate app icons and splash screens.
-Use $android-mobile-config-network-security to enable local HTTP for dev only.
-Use $android-mobile-config-help to show available commands.
+Use $android-flavors to configure dev and prod flavors.
+Use $android to change Android package/applicationId.
+Use $android-firebase to configure Firebase for Android flavors.
+Use $android-assets to generate app icons and splash screens.
+Use $android-network-security to enable local HTTP for dev only.
+Use $android-help to show available commands.
 ```
 
 From a shell in an Android project root:
@@ -185,6 +185,7 @@ mobile-app-config init
 mobile-app-config flavors
 mobile-app-config validate-flavors
 mobile-app-config package-name --application-id com.aistudio.taskarena.kymzap
+mobile-app-config package-name --application-id com.aistudio.taskarena.kymzap --app-name "Task Arena" --root-project-name "Task Arena"
 mobile-app-config validate-package-name
 mobile-app-config firebase
 mobile-app-config validate-firebase
@@ -194,8 +195,6 @@ mobile-app-config validate-assets --type all
 mobile-app-config network-security
 mobile-app-config validate-network-security
 ```
-
-`android-mobile-config` remains available as a backward-compatible CLI alias.
 
 After running `mobile-app-config flavors`, run Gradle Sync in Android Studio. The expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
 
@@ -208,7 +207,7 @@ mobile-app-config package-name --application-id com.aistudio.taskarena.kymzap
 mobile-app-config validate-package-name
 ```
 
-The command updates app `namespace`, `defaultConfig.applicationId`, Kotlin/Java package folders, package declarations, and imports that reference the old package prefix. Flavor `applicationIdSuffix` values are preserved.
+The command updates app `namespace`, `defaultConfig.applicationId`, Kotlin/Java package folders, package declarations, and imports that reference the old package prefix. Optional `--app-name` updates display-name resources for `main`, `dev`, and `prod`; optional `--root-project-name` updates `settings.gradle.kts`. Flavor `applicationIdSuffix` values are preserved.
 
 ### Android app icons and splash screens
 
@@ -287,13 +286,13 @@ If Firebase CLI is not logged in, the command stops. Run `firebase login`, then 
 If the Python package is not installed, call the bundled CLI directly:
 
 ```bash
-python3 /path/to/mobile-app-config/skills/android-mobile-config/scripts/mobile-app-config flavors
+python3 /path/to/mobile-app-config/skills/android/scripts/mobile-app-config flavors
 ```
 
 Default behavior:
 
-- Missing `android-mobile-config.json` is auto-created from the current project.
-- Existing config is not rewritten unless `init --force` is used.
+- Missing `android-app-config.json` is inferred in memory.
+- `init` creates `android-app-config.json`; commands with explicit persisted options update it.
 - `firebase` exits as a clear no-op unless `firebase.enabled=true` or Firebase flags are provided.
 - Firebase auth uses local Firebase CLI login. If needed, run `firebase login`, then rerun the command.
 - `assets` exits as a clear no-op unless `assets.enabled=true` or asset flags are provided.
@@ -307,13 +306,13 @@ mobile-app-config/
   .codex-plugin/plugin.json             Codex plugin manifest
   .claude-plugin/plugin.json            Claude Code plugin manifest
   skills/
-    android-mobile-config/              Canonical Android skill with CLI and references
-    android-mobile-config-init/         Command-style skill
-    android-mobile-config-flavors/      Command-style skill
-    android-mobile-config-firebase/     Command-style skill
-    android-mobile-config-assets/       Command-style skill
-    android-mobile-config-network-security/
-    android-mobile-config-help/
+    android/              Canonical Android skill with CLI and references
+    android-init/         Command-style skill
+    android-flavors/      Command-style skill
+    android-firebase/     Command-style skill
+    android-assets/       Command-style skill
+    android-network-security/
+    android-help/
   scripts/
     install_local_symlinks.py           Local Codex skill installer
     validate_skill.py                   Skill and metadata validator
@@ -331,7 +330,7 @@ mobile-app-config/
 | Codex Plugin              | `.codex-plugin/plugin.json` and `skills/`     | Plugin root is this repository                 |
 | Codex Skill Manual        | `~/.codex/skills/<skill-name>`                | Created by `scripts/install_local_symlinks.py` |
 | Claude Code Plugin Manual | `claude --plugin-dir ./mobile-app-config`     | Uses `.claude-plugin/plugin.json`              |
-| Claude Code Skill Manual  | `~/.claude/skills/<skill-name>`               | Copy `skills/android-mobile-config*`           |
+| Claude Code Skill Manual  | `~/.claude/skills/<skill-name>`               | Copy `skills/android*`           |
 | Project-specific Codex    | `<project>/.codex/skills/<skill-name>`        | Copy skill folders into the Android repo       |
 | Project-specific Claude   | `<project>/.claude/skills/<skill-name>`       | Copy skill folders into the Android repo       |
 | Other AI coding tools     | tool-specific rules or skill folders          | Use `skills/` and the bundled CLI              |

@@ -9,13 +9,13 @@ SKILLS_ROOT = ROOT / "skills"
 LOCAL_SKILLS = Path.home() / ".codex" / "skills"
 
 SKILL_NAMES = [
-    "android-mobile-config",
-    "android-mobile-config-init",
-    "android-mobile-config-flavors",
-    "android-mobile-config-firebase",
-    "android-mobile-config-assets",
-    "android-mobile-config-network-security",
-    "android-mobile-config-help",
+    "android",
+    "android-init",
+    "android-flavors",
+    "android-firebase",
+    "android-assets",
+    "android-network-security",
+    "android-help",
 ]
 
 

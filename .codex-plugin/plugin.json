@@ -1,13 +1,13 @@
 {
   "name": "mobile-app-config",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Configure mobile app package names, Android flavors, Firebase, app assets, and optional network security from agent workflows.",
   "author": {
     "name": "dthuy62",
     "url": "https://github.com/dthuy62"
   },
-  "homepage": "https://github.com/dthuy62/android-mobile-config",
-  "repository": "https://github.com/dthuy62/android-mobile-config",
+  "homepage": "https://github.com/dthuy62/mobile-app-config",
+  "repository": "https://github.com/dthuy62/mobile-app-config",
   "license": "MIT",
   "keywords": ["android", "gradle", "flavors", "firebase", "mobile", "codex"],
   "skills": "./skills/",
@@ -18,12 +18,12 @@
     "developerName": "dthuy62",
     "category": "Developer Tools",
     "capabilities": ["Read", "Write"],
-    "websiteURL": "https://github.com/dthuy62/android-mobile-config",
+    "websiteURL": "https://github.com/dthuy62/mobile-app-config",
     "defaultPrompt": [
-      "Use Android Mobile Config to configure dev and prod Android flavors.",
-      "Use Android Mobile Config to configure Firebase for Android flavors.",
-      "Use Android Mobile Config to generate Android app assets.",
-      "Use Android Mobile Config to configure dev-only network security."
+      "Use Mobile App Config to configure dev and prod Android flavors.",
+      "Use Mobile App Config to configure Firebase for Android flavors.",
+      "Use Mobile App Config to generate Android app assets.",
+      "Use Mobile App Config to configure dev-only network security."
     ]
   }
 }

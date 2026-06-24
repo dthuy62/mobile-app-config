@@ -10,7 +10,6 @@ requires-python = ">=3.9"
 dependencies = []
 
 [project.scripts]
-android-mobile-config = "android_mobile_config.cli:main"
 mobile-app-config = "android_mobile_config.cli:main"
 
 [project.optional-dependencies]
@@ -18,9 +17,9 @@ assets = ["Pillow>=10"]
 dev = ["pytest>=8", "PyYAML>=6"]
 
 [tool.setuptools.packages.find]
-where = ["skills/android-mobile-config/scripts"]
+where = ["skills/android/scripts"]
 include = ["android_mobile_config*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["skills/android-mobile-config/scripts"]
+pythonpath = ["skills/android/scripts"]

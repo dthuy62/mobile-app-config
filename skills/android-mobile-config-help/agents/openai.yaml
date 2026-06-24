@@ -1,5 +1,0 @@
-interface:
-  display_name: "Mobile App Config: Help"
-  short_description: "Show Mobile App Config commands"
-  default_prompt: "Use $android-mobile-config-help to show available Mobile App Config commands."
-

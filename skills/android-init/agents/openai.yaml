@@ -1,0 +1,5 @@
+interface:
+  display_name: "Mobile App Config: Init"
+  short_description: "Create android-app-config.json"
+  default_prompt: "Use $android-init to create android-app-config.json for this Android project."
+

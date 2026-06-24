@@ -19,7 +19,7 @@ def test_validate_skill_script_passes() -> None:
 
 
 def test_skill_frontmatter_contains_only_name_and_description() -> None:
-    text = (ROOT / "skills" / "android-mobile-config" / "SKILL.md").read_text()
+    text = (ROOT / "skills" / "android" / "SKILL.md").read_text()
     frontmatter = text.split("---", 2)[1]
     keys = [line.split(":", 1)[0] for line in frontmatter.strip().splitlines()]
     assert keys == ["name", "description"]
@@ -39,7 +39,7 @@ def test_plugin_brand_is_mobile_app_config() -> None:
     assert codex["name"] == "mobile-app-config"
     assert claude["name"] == "mobile-app-config"
     assert "mobile-app-config" in (ROOT / "pyproject.toml").read_text()
-    assert (ROOT / "skills" / "android-mobile-config" / "scripts" / "mobile-app-config").exists()
+    assert (ROOT / "skills" / "android" / "scripts" / "mobile-app-config").exists()
 
 
 def test_build_dist_contains_only_portable_skill_files() -> None:
@@ -54,10 +54,10 @@ def test_build_dist_contains_only_portable_skill_files() -> None:
     zip_path = ROOT / "dist" / "mobile-app-config-skills.zip"
     with zipfile.ZipFile(zip_path) as archive:
         names = archive.namelist()
-    assert "mobile-app-config-skills/android-mobile-config/SKILL.md" in names
-    assert "mobile-app-config-skills/android-mobile-config-flavors/SKILL.md" in names
-    assert "mobile-app-config-skills/android-mobile-config-firebase/SKILL.md" in names
-    assert "mobile-app-config-skills/android-mobile-config-assets/SKILL.md" in names
+    assert "mobile-app-config-skills/android/SKILL.md" in names
+    assert "mobile-app-config-skills/android-flavors/SKILL.md" in names
+    assert "mobile-app-config-skills/android-firebase/SKILL.md" in names
+    assert "mobile-app-config-skills/android-assets/SKILL.md" in names
     assert all("/tests/" not in name for name in names)
     assert all("__pycache__" not in name for name in names)
     assert all(not name.endswith(".pyc") for name in names)

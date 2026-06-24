@@ -1,12 +1,12 @@
 {
   "name": "mobile-app-config",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Configure mobile app package names, Android flavors, Firebase, app assets, and optional network security from agent workflows.",
   "author": {
     "name": "dthuy62",
     "url": "https://github.com/dthuy62"
   },
-  "homepage": "https://github.com/dthuy62/android-mobile-config",
-  "repository": "https://github.com/dthuy62/android-mobile-config",
+  "homepage": "https://github.com/dthuy62/mobile-app-config",
+  "repository": "https://github.com/dthuy62/mobile-app-config",
   "license": "MIT"
 }
