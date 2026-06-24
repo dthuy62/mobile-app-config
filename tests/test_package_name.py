@@ -119,6 +119,28 @@ def test_package_name_updates_divergent_identities(tmp_path) -> None:
     assert (gradle.read_text(), moved_activity.read_text(), moved_user.read_text(), read_config(project)) == before
 
 
+def test_package_name_rewrites_inline_fully_qualified_source_refs(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    source = project / "app" / "src" / "main" / "kotlin" / "com" / "example" / "UsesInlineRefs.kt"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "package com.example\n\n"
+        "val dare: List<com.example.domain.model.TaskDare> = emptyList()\n"
+        "val color = com.example.ui.theme.NeoGreen\n"
+        "val untouched: mycom.example.domain.Task? = null\n"
+    )
+
+    result = run_cli(project, "package-name", "--application-id", "me.dthuy.careerops")
+
+    assert result.returncode == 0, result.stderr
+    moved = project / "app" / "src" / "main" / "kotlin" / "me" / "dthuy" / "careerops" / "UsesInlineRefs.kt"
+    text = moved.read_text()
+    assert "List<me.dthuy.careerops.domain.model.TaskDare>" in text
+    assert "me.dthuy.careerops.ui.theme.NeoGreen" in text
+    assert "mycom.example.domain.Task" in text
+    assert run_cli(project, "validate-package-name").returncode == 0
+
+
 def test_package_name_rejects_ambiguous_source_packages_before_writes(tmp_path) -> None:
     project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
     init = run_cli(project, "init")

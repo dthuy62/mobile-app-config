@@ -243,6 +243,7 @@ def rewrite_source_packages(src: Path, old: str, new: str) -> None:
         text = path.read_text()
         text = re.sub(rf"(^\s*package\s+){old_re}(\b|\.)", rf"\g<1>{new}\2", text, flags=re.MULTILINE)
         text = re.sub(rf"(^\s*import\s+){old_re}(\b|\.)", rf"\g<1>{new}\2", text, flags=re.MULTILINE)
+        text = re.sub(rf"(?<![\w.]){old_re}\.", f"{new}.", text)
         path.write_text(text)
 
 
