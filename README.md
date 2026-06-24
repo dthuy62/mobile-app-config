@@ -48,19 +48,19 @@ python3 -m pip install -e ".[dev,assets]"
 
 ## Installation
 
-### Codex Plugin Marketplace
+### Codex Plugin Marketplace (Recommended)
 
-This is the primary installation path.
+This is the primary supported installation path.
 
-After the plugin is published, add the marketplace source:
+Add the marketplace source:
 
 ```bash
 codex plugin marketplace add dthuy62/mobile-app-config
 ```
 
-Then restart Codex and install `Mobile App Config` from the Codex plugin directory.
+Restart Codex and install `Mobile App Config` from the Codex plugin directory.
 
-This repository includes the marketplace and plugin metadata Codex expects:
+This repository includes the plugin metadata Codex expects:
 
 ```text
 .agents/plugins/marketplace.json
@@ -68,7 +68,7 @@ This repository includes the marketplace and plugin metadata Codex expects:
 skills/
 ```
 
-For local marketplace testing before publication:
+For local marketplace testing:
 
 ```bash
 git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
@@ -77,23 +77,9 @@ codex plugin marketplace add ./mobile-app-config
 
 Restart Codex after changing plugin metadata or skills.
 
-### Codex Plugin Manual
-
-Use this path while developing the plugin locally.
-
-```bash
-git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
-cd mobile-app-config
-python3 scripts/validate_skill.py
-python3 scripts/build_dist.py
-codex plugin marketplace add .
-```
-
-Codex loads plugins through a marketplace entry, even for local plugin testing. The local marketplace catalog in this repo points to the plugin root.
-
 ### Claude Code Plugin Manual
 
-Claude Code is supported manually. Marketplace packaging for Claude Code is not the primary target of this repo.
+Claude Code is supported manually through the plugin directory.
 
 ```bash
 git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
@@ -106,61 +92,14 @@ Claude Code plugin metadata lives at:
 .claude-plugin/plugin.json
 ```
 
-### Claude Code Skill Manual
+### Project-Specific Claude Plugin
 
-If you only want the skills and not the plugin wrapper:
-
-```bash
-mkdir -p ~/.claude/skills
-cp -R skills/android* ~/.claude/skills/
-```
-
-Restart Claude Code after copying.
-
-### Codex Skill Manual
-
-For local skill-only usage without Codex plugin installation:
+Use this path when a single Android repository should carry the plugin with it.
 
 ```bash
-git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
-cd mobile-app-config
-python3 scripts/install_local_symlinks.py
-```
-
-This symlinks every skill folder into `~/.codex/skills`.
-
-### Other AI Coding Tools
-
-For tools such as Cursor, Antigravity, or other agent hosts, use the skill folders directly:
-
-```text
-skills/android/
-skills/android-init/
-skills/android-flavors/
-skills/android-firebase/
-skills/android-assets/
-skills/android-network-security/
-skills/android-help/
-```
-
-If the host does not support skills, point its project rules or agent instructions at `skills/android/SKILL.md` and run the bundled CLI from the Android project root.
-
-### Project-Specific
-
-Use this path when a single Android repository should carry the workflow with it.
-
-Codex-style project install:
-
-```bash
-mkdir -p .codex/skills
-cp -R /path/to/mobile-app-config/skills/android* .codex/skills/
-```
-
-Claude-style project install:
-
-```bash
-mkdir -p .claude/skills
-cp -R /path/to/mobile-app-config/skills/android* .claude/skills/
+mkdir -p tools
+cp -R /path/to/mobile-app-config tools/mobile-app-config
+claude --plugin-dir ./tools/mobile-app-config
 ```
 
 Project-specific installs are useful for teams that want Android setup automation checked into the app repository.
@@ -314,39 +253,8 @@ mobile-app-config/
     android-network-security/
     android-help/
   scripts/
-    install_local_symlinks.py           Local Codex skill installer
     validate_skill.py                   Skill and metadata validator
-    build_dist.py                       Skill archive builder
   tests/                                Pytest suite and Android fixtures
-  dist/                                 Generated release output
-```
-
-## Platform Output Directories
-
-
-| Target                    | Install location or source                    | Notes                                          |
-| ------------------------- | --------------------------------------------- | ---------------------------------------------- |
-| Codex Marketplace         | `.agents/plugins/marketplace.json`            | Primary distribution path                      |
-| Codex Plugin              | `.codex-plugin/plugin.json` and `skills/`     | Plugin root is this repository                 |
-| Codex Skill Manual        | `~/.codex/skills/<skill-name>`                | Created by `scripts/install_local_symlinks.py` |
-| Claude Code Plugin Manual | `claude --plugin-dir ./mobile-app-config`     | Uses `.claude-plugin/plugin.json`              |
-| Claude Code Skill Manual  | `~/.claude/skills/<skill-name>`               | Copy `skills/android*`           |
-| Project-specific Codex    | `<project>/.codex/skills/<skill-name>`        | Copy skill folders into the Android repo       |
-| Project-specific Claude   | `<project>/.claude/skills/<skill-name>`       | Copy skill folders into the Android repo       |
-| Other AI coding tools     | tool-specific rules or skill folders          | Use `skills/` and the bundled CLI              |
-
-
-Build distributable skill folders:
-
-```bash
-python3 scripts/build_dist.py
-```
-
-Output:
-
-```text
-dist/mobile-app-config-skills/
-dist/mobile-app-config-skills.zip
 ```
 
 ## Development
@@ -355,7 +263,6 @@ dist/mobile-app-config-skills.zip
 python3 -m pip install -e ".[dev]"
 python3 scripts/validate_skill.py
 python3 -m pytest
-python3 scripts/build_dist.py
 ```
 
 The test suite uses small Kotlin Gradle Android fixtures and does not require building a real Android app.

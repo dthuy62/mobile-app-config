@@ -1,10 +1,19 @@
 from __future__ import annotations
 
 import subprocess
-import zipfile
+import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SKILL_NAMES = [
+    "android",
+    "android-init",
+    "android-flavors",
+    "android-firebase",
+    "android-assets",
+    "android-network-security",
+    "android-help",
+]
 
 
 def test_validate_skill_script_passes() -> None:
@@ -42,22 +51,50 @@ def test_plugin_brand_is_mobile_app_config() -> None:
     assert (ROOT / "skills" / "android" / "scripts" / "mobile-app-config").exists()
 
 
-def test_build_dist_contains_only_portable_skill_files() -> None:
-    result = subprocess.run(
-        ["python3", str(ROOT / "scripts" / "build_dist.py")],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr
-    zip_path = ROOT / "dist" / "mobile-app-config-skills.zip"
-    with zipfile.ZipFile(zip_path) as archive:
-        names = archive.namelist()
-    assert "mobile-app-config-skills/android/SKILL.md" in names
-    assert "mobile-app-config-skills/android-flavors/SKILL.md" in names
-    assert "mobile-app-config-skills/android-firebase/SKILL.md" in names
-    assert "mobile-app-config-skills/android-assets/SKILL.md" in names
-    assert all("/tests/" not in name for name in names)
-    assert all("__pycache__" not in name for name in names)
-    assert all(not name.endswith(".pyc") for name in names)
+def test_skill_docs_do_not_depend_on_local_install_paths() -> None:
+    forbidden = ["~/.codex/skills", "/Users/", ".codex/plugins/cache", "android-mobile-config"]
+    for path in (ROOT / "skills").glob("*/SKILL.md"):
+        text = path.read_text()
+        for value in forbidden:
+            assert value not in text, f"{path} contains unsupported install path or stale name: {value}"
+
+
+def test_skill_cli_paths_resolve_inside_marketplace_layout(tmp_path) -> None:
+    cache_skills = tmp_path / "plugins" / "cache" / "mobile-app-config" / "mobile-app-config" / "1.0.0" / "skills"
+    for skill_name in SKILL_NAMES:
+        source = ROOT / "skills" / skill_name
+        target = cache_skills / skill_name
+        target.mkdir(parents=True)
+        for child in source.iterdir():
+            if child.is_file():
+                (target / child.name).write_bytes(child.read_bytes())
+            elif child.name in {"scripts", "agents", "references"}:
+                shutil.copytree(child, target / child.name)
+
+    expected = {
+        "android": "scripts/mobile-app-config",
+        "android-init": "../android/scripts/mobile-app-config",
+        "android-flavors": "../android/scripts/mobile-app-config",
+        "android-firebase": "../android/scripts/mobile-app-config",
+        "android-assets": "../android/scripts/mobile-app-config",
+        "android-network-security": "../android/scripts/mobile-app-config",
+        "android-help": "../android/scripts/mobile-app-config",
+    }
+    for skill_name, rel in expected.items():
+        assert rel in (ROOT / "skills" / skill_name / "SKILL.md").read_text()
+        assert (cache_skills / skill_name / rel).resolve().exists()
+
+
+def test_public_docs_document_only_supported_install_flows() -> None:
+    text = "\n".join((ROOT / name).read_text() for name in ["README.md", "CONTRIBUTING.md"])
+    forbidden = [
+        "android-mobile-config",
+        "Codex Skill Manual",
+        "install_local_symlinks.py",
+        "~/.codex/skills",
+        "Other AI Coding Tools",
+        "Platform Output Directories",
+        "build_dist.py",
+    ]
+    for value in forbidden:
+        assert value not in text

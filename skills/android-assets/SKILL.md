@@ -7,18 +7,18 @@ description: Generate or validate Android app icons and splash screen resources 
 
 Generate Android assets from the project root. Passing asset options stores them in `android-app-config.json`.
 
-Run the canonical skill CLI from the Android project root:
+Resolve `../android/scripts/mobile-app-config` relative to this `SKILL.md`, then run it from the Android project root:
 
 ```bash
-~/.codex/skills/android/scripts/mobile-app-config assets --type app-icons --image branding/logo.png
-~/.codex/skills/android/scripts/mobile-app-config assets --type splash-screens --image branding/splash.png
-~/.codex/skills/android/scripts/mobile-app-config assets --type all --image branding/logo.png
+<resolved-script> assets --type app-icons --image branding/logo.png
+<resolved-script> assets --type splash-screens --image branding/splash.png
+<resolved-script> assets --type all --image branding/logo.png
 ```
 
 Then validate:
 
 ```bash
-~/.codex/skills/android/scripts/mobile-app-config validate-assets --type all
+<resolved-script> validate-assets --type all
 ```
 
 Asset generation is disabled by default. Passing `--image` enables the selected type. Existing `assets.sourceIcon` remains supported for older configs.

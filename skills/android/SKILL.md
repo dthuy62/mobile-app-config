@@ -9,14 +9,14 @@ Use this skill for Android app configuration tasks that are fragile to edit by h
 
 ## Quick Start
 
-Run commands from the Android project root:
+Resolve `scripts/mobile-app-config` relative to this `SKILL.md`, then run it from the Android project root:
 
 ```bash
-~/.codex/skills/android/scripts/mobile-app-config flavors
-~/.codex/skills/android/scripts/mobile-app-config package-name --application-id com.example.app
-~/.codex/skills/android/scripts/mobile-app-config firebase --mode single --project my-firebase
-~/.codex/skills/android/scripts/mobile-app-config assets --type all --image branding/logo.png
-~/.codex/skills/android/scripts/mobile-app-config network-security
+<resolved-script> flavors
+<resolved-script> package-name --application-id com.example.app
+<resolved-script> firebase --mode single --project my-firebase
+<resolved-script> assets --type all --image branding/logo.png
+<resolved-script> network-security
 ```
 
 Commands infer Android defaults in memory when `android-app-config.json` is missing. `init` creates the file, and commands that persist explicit options update it.

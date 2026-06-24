@@ -7,10 +7,10 @@ description: Initialize android-app-config.json for an Android project. Use when
 
 Initialize the config file from the Android project root.
 
-Run the canonical skill CLI from the Android project root:
+Resolve `../android/scripts/mobile-app-config` relative to this `SKILL.md`, then run it from the Android project root:
 
 ```bash
-~/.codex/skills/android/scripts/mobile-app-config init
+<resolved-script> init
 ```
 
 Use `--force` only when the user explicitly wants to replace an existing `android-app-config.json`.

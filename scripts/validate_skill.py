@@ -21,6 +21,7 @@ SKILL_NAMES = [
     "android-network-security",
     "android-help",
 ]
+FORBIDDEN_SKILL_TEXT = ["~/.codex/skills", "/Users/", ".codex/plugins/cache", "android-mobile-config"]
 
 
 def main() -> int:
@@ -41,13 +42,17 @@ def validate_one_skill(skill: Path, skill_name: str, errors: list[str]) -> None:
     if not skill_md.exists():
         errors.append(f"{skill_name}: missing SKILL.md")
     else:
-        frontmatter = parse_frontmatter(skill_md.read_text(), errors)
+        text = skill_md.read_text()
+        frontmatter = parse_frontmatter(text, errors)
         if set(frontmatter) != {"name", "description"}:
             errors.append(f"{skill_name}: SKILL.md frontmatter must contain only name and description")
         if frontmatter.get("name") != skill_name:
             errors.append(f"{skill_name}: SKILL.md name must be {skill_name}")
         if not frontmatter.get("description"):
             errors.append(f"{skill_name}: SKILL.md description is required")
+        for forbidden in FORBIDDEN_SKILL_TEXT:
+            if forbidden in text:
+                errors.append(f"{skill_name}: SKILL.md contains unsupported install path or stale name: {forbidden}")
 
     required = ["agents/openai.yaml"]
     if skill_name == CANONICAL:

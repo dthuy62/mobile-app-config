@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0
+
+- Made Codex Marketplace the primary supported install path.
+- Removed unsupported Codex skill symlink and dist archive flows.
+- Updated skill instructions to resolve the bundled CLI relative to each `SKILL.md`.
+- Added packaging contract tests to prevent local absolute paths and stale install docs.
+- Added optional `package-name --app-name` and `--root-project-name` support.
+
 ## 0.5.0
 
 - Fixed `package-name` to sync divergent Android identities by resolving source packages from Gradle namespace and Kotlin/Java declarations.
