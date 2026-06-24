@@ -6,7 +6,7 @@ description: Configure Firebase multi-flavor google-services.json files with mob
 # Mobile App Config Firebase
 
 Configure Firebase from the Android project root. The command uses Firebase CLI local login only.
-Resolve `../android/scripts/mobile-app-config` relative to this `SKILL.md`, then run it from the Android project root.
+Use the bundled CLI at `../android/scripts/mobile-app-config`, resolved relative to this `SKILL.md`. Run it with cwd set to the Android project root.
 
 If Firebase CLI is not logged in, stop and tell the user:
 
@@ -19,25 +19,25 @@ Then rerun the same `mobile-app-config firebase` command.
 Single Firebase project for all flavors:
 
 ```bash
-<resolved-script> firebase --mode single --project my-firebase
+mobile-app-config firebase --mode single --project my-firebase
 ```
 
 One Firebase project per flavor:
 
 ```bash
-<resolved-script> firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
 ```
 
 Create missing Firebase Android apps only when explicitly requested:
 
 ```bash
-<resolved-script> firebase --mode single --project my-firebase --create-apps
+mobile-app-config firebase --mode single --project my-firebase --create-apps
 ```
 
 Then validate:
 
 ```bash
-<resolved-script> validate-firebase
+mobile-app-config validate-firebase
 ```
 
 Do not store Firebase credentials, service account JSON, or tokens in `android-app-config.json`.

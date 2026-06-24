@@ -16,14 +16,14 @@ Display this quick reference. One-shot only; do not change files unless the user
 | `/android-assets` | Generate Android app assets |
 | `/android-network-security` | Configure optional network-security XML |
 
-Resolve `../android/scripts/mobile-app-config` relative to this `SKILL.md`, then run it from the Android project root:
+Use the bundled CLI at `../android/scripts/mobile-app-config`, resolved relative to this `SKILL.md`. Run it with cwd set to the Android project root.
 
 ```bash
-<resolved-script> flavors
-<resolved-script> firebase --mode single --project my-firebase
-<resolved-script> firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
-<resolved-script> assets
-<resolved-script> network-security
+mobile-app-config flavors
+mobile-app-config firebase --mode single --project my-firebase
+mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+mobile-app-config assets
+mobile-app-config network-security
 ```
 
 After flavor generation, run Gradle Sync in Android Studio. Expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.

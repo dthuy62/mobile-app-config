@@ -7,16 +7,16 @@ description: Configure or validate Android product flavors with mobile-app-confi
 
 Configure Android product flavors from the project root. Missing config is inferred in memory.
 
-Resolve `../android/scripts/mobile-app-config` relative to this `SKILL.md`, then run it from the Android project root:
+Use the bundled CLI at `../android/scripts/mobile-app-config`, resolved relative to this `SKILL.md`. Run it with cwd set to the Android project root.
 
 ```bash
-<resolved-script> flavors
+mobile-app-config flavors
 ```
 
 Then validate:
 
 ```bash
-<resolved-script> validate-flavors
+mobile-app-config validate-flavors
 ```
 
 Run Gradle Sync in Android Studio after generation. Expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.

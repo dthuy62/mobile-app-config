@@ -7,16 +7,16 @@ description: Configure optional Android network-security XML for local or dev bu
 
 Configure Android network security from the project root. Missing config is inferred in memory.
 
-Resolve `../android/scripts/mobile-app-config` relative to this `SKILL.md`, then run it from the Android project root:
+Use the bundled CLI at `../android/scripts/mobile-app-config`, resolved relative to this `SKILL.md`. Run it with cwd set to the Android project root.
 
 ```bash
-<resolved-script> network-security
+mobile-app-config network-security
 ```
 
 Then validate:
 
 ```bash
-<resolved-script> validate-network-security
+mobile-app-config validate-network-security
 ```
 
 Network security is disabled by default. Do not enable broad cleartext for `prod` unless the user explicitly requests it.
