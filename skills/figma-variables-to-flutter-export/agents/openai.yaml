@@ -1,0 +1,5 @@
+interface:
+  display_name: "Figma Variables To Flutter Export"
+  short_description: "Export Figma Variables JSON to Flutter theme Dart files"
+  default_prompt: "Use $figma-variables-to-flutter-export to export Figma Variables JSON into Flutter design-system Dart files."
+

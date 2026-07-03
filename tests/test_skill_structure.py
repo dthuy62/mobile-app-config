@@ -13,6 +13,7 @@ SKILL_NAMES = [
     "android-assets",
     "android-network-security",
     "android-help",
+    "figma-variables-to-flutter-export",
 ]
 
 
@@ -60,7 +61,7 @@ def test_skill_docs_do_not_depend_on_local_install_paths() -> None:
 
 
 def test_skill_cli_paths_resolve_inside_marketplace_layout(tmp_path) -> None:
-    cache_skills = tmp_path / "plugins" / "cache" / "mobile-app-config" / "mobile-app-config" / "1.0.0" / "skills"
+    cache_skills = tmp_path / "plugins" / "cache" / "mobile-app-config" / "mobile-app-config" / "1.1.0" / "skills"
     for skill_name in SKILL_NAMES:
         source = ROOT / "skills" / skill_name
         target = cache_skills / skill_name
@@ -79,6 +80,7 @@ def test_skill_cli_paths_resolve_inside_marketplace_layout(tmp_path) -> None:
         "android-assets": "../android/scripts/mobile-app-config",
         "android-network-security": "../android/scripts/mobile-app-config",
         "android-help": "../android/scripts/mobile-app-config",
+        "figma-variables-to-flutter-export": "scripts/figma-variables-to-flutter-export",
     }
     for skill_name, rel in expected.items():
         assert rel in (ROOT / "skills" / skill_name / "SKILL.md").read_text()

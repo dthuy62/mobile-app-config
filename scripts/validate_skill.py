@@ -20,6 +20,7 @@ SKILL_NAMES = [
     "android-assets",
     "android-network-security",
     "android-help",
+    "figma-variables-to-flutter-export",
 ]
 FORBIDDEN_SKILL_TEXT = ["~/.codex/skills", "/Users/", ".codex/plugins/cache", "android-mobile-config"]
 
@@ -70,6 +71,10 @@ def validate_one_skill(skill: Path, skill_name: str, errors: list[str]) -> None:
             "references/firebase.md",
             "references/android-assets.md",
             "references/network-security.md",
+        ])
+    if skill_name == "figma-variables-to-flutter-export":
+        required.extend([
+            "scripts/figma-variables-to-flutter-export",
         ])
     for rel in required:
         if not (skill / rel).exists():
