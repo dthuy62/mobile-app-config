@@ -1,7 +1,7 @@
 {
   "name": "mobile-app-config",
-  "version": "1.1.0",
-  "description": "Configure mobile app projects and export Figma Variables JSON into Flutter design-system Dart files from agent workflows.",
+  "version": "1.1.1",
+  "description": "Configure mobile app projects and convert Figma or text design tokens into Flutter design-system Dart files from agent workflows.",
   "author": {
     "name": "dthuy62",
     "url": "https://github.com/dthuy62"

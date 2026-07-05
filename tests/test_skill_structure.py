@@ -61,7 +61,7 @@ def test_skill_docs_do_not_depend_on_local_install_paths() -> None:
 
 
 def test_skill_cli_paths_resolve_inside_marketplace_layout(tmp_path) -> None:
-    cache_skills = tmp_path / "plugins" / "cache" / "mobile-app-config" / "mobile-app-config" / "1.1.0" / "skills"
+    cache_skills = tmp_path / "plugins" / "cache" / "mobile-app-config" / "mobile-app-config" / "1.1.1" / "skills"
     for skill_name in SKILL_NAMES:
         source = ROOT / "skills" / skill_name
         target = cache_skills / skill_name

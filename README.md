@@ -1,6 +1,6 @@
 # Mobile App Config
 
-Mobile App Config is a Codex plugin for configuring mobile app environments from agent workflows. It gives Codex deterministic commands for Android product flavors, package names, Firebase multi-flavor config, flavor-specific app names, Android app assets, optional network-security XML, and Figma Variables JSON to Flutter design-system Dart export.
+Mobile App Config is a Codex plugin for configuring mobile app environments from agent workflows. It gives Codex deterministic commands for Android product flavors, package names, Firebase multi-flavor config, flavor-specific app names, Android app assets, optional network-security XML, and design tokens to Flutter design-system Dart export.
 
 The plugin is designed for Codex Marketplace distribution first. Claude Code and standalone skill installs are supported as manual compatibility paths.
 
@@ -17,7 +17,7 @@ The plugin is designed for Codex Marketplace distribution first. Claude Code and
 - Generate legacy launcher icons, adaptive icons, optional themed icons, and XML-only splash screens.
 - Configure Android network-security XML only when explicitly enabled.
 - Refuse broad production cleartext traffic unless explicitly allowed.
-- Export Figma Variables JSON into Flutter design-system Dart files, starting with `app_colors.dart`.
+- Convert Figma Variables JSON, Figma MCP variables, or plain text design tokens into Flutter design-system Dart files.
 - Expose focused command-style skills:
   - `$android`
   - `$android-init`
@@ -116,7 +116,7 @@ Use $android to change Android package/applicationId.
 Use $android-firebase to configure Firebase for Android flavors.
 Use $android-assets to generate app icons and splash screens.
 Use $android-network-security to enable local HTTP for dev only.
-Use $figma-variables-to-flutter-export to export Figma Variables JSON to Flutter.
+Use $figma-variables-to-flutter-export to convert Figma or text design tokens to Flutter.
 Use $android-help to show available commands.
 ```
 
@@ -138,7 +138,7 @@ mobile-app-config network-security
 mobile-app-config validate-network-security
 ```
 
-Export Figma Variables JSON to Flutter colors:
+Export Figma Variables JSON to Flutter colors with the bundled CLI:
 
 ```bash
 skills/figma-variables-to-flutter-export/scripts/figma-variables-to-flutter-export file.json \

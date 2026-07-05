@@ -1,7 +1,7 @@
 {
   "name": "mobile-app-config",
-  "version": "1.1.0",
-  "description": "Configure mobile app projects and export Figma Variables JSON into Flutter design-system Dart files from agent workflows.",
+  "version": "1.1.1",
+  "description": "Configure mobile app projects and convert Figma or text design tokens into Flutter design-system Dart files from agent workflows.",
   "author": {
     "name": "dthuy62",
     "url": "https://github.com/dthuy62"
@@ -13,8 +13,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Mobile App Config",
-    "shortDescription": "Configure mobile apps and export Figma Variables to Flutter",
-    "longDescription": "Deterministic mobile app setup workflows for Android product flavors, Firebase google-services.json files, package names, flavor-specific app names, generated assets, optional network security, and Figma Variables JSON to Flutter design-system Dart exports.",
+    "shortDescription": "Configure mobile apps and convert design tokens to Flutter",
+    "longDescription": "Deterministic mobile app setup workflows for Android product flavors, Firebase google-services.json files, package names, flavor-specific app names, generated assets, optional network security, and Figma or text design tokens to Flutter design-system Dart exports.",
     "developerName": "dthuy62",
     "category": "Developer Tools",
     "capabilities": ["Read", "Write"],
@@ -24,7 +24,7 @@
       "Use Mobile App Config to configure Firebase for Android flavors.",
       "Use Mobile App Config to generate Android app assets.",
       "Use Mobile App Config to configure dev-only network security.",
-      "Use Mobile App Config to export Figma Variables JSON into Flutter design-system Dart files."
+      "Use Mobile App Config to convert Figma Variables JSON, Figma MCP variables, or plain text design tokens into Flutter design-system Dart files."
     ]
   }
 }
