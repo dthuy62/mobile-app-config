@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+- Added JSON CLI exports for spacing, radius, shadow, and typography design tokens.
+- Kept existing color export behavior unchanged.
+- Updated Flutter ThemeExtension output coverage for non-color token groups.
+
 ## 1.0.0
 
 - Made Codex Marketplace the primary supported install path.

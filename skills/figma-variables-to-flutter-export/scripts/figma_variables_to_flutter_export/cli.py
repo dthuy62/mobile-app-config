@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from .models import ExportOptions
-from .pipeline import ColorExportPipeline
+from .pipeline import ExportPipeline
 
 
 def main() -> int:
@@ -27,7 +27,7 @@ def main() -> int:
     )
 
     try:
-        source = ColorExportPipeline().run(options, warn=warn)
+        source = ExportPipeline().run(options, warn=warn)
         if options.dry_run:
             print(source)
             return 0
@@ -43,7 +43,7 @@ def main() -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export Figma Variables JSON to Flutter Dart files.")
     parser.add_argument("json_file", type=Path)
-    parser.add_argument("--type", choices=["colors"], default="colors")
+    parser.add_argument("--type", choices=["colors", "typography", "spacing", "radius", "shadow"], default="colors")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--layer", choices=["auto", "base", "system"], default="auto")
     parser.add_argument("--base-json", type=Path)
@@ -65,4 +65,3 @@ def parse_args() -> argparse.Namespace:
 
 def warn(message: str) -> None:
     print(f"warning: {message}", file=sys.stderr)
-

@@ -1,6 +1,6 @@
 {
   "name": "mobile-app-config",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Configure mobile app projects and convert Figma or text design tokens into Flutter design-system Dart files from agent workflows.",
   "author": {
     "name": "dthuy62",
@@ -9,7 +9,17 @@
   "homepage": "https://github.com/dthuy62/mobile-app-config",
   "repository": "https://github.com/dthuy62/mobile-app-config",
   "license": "MIT",
-  "keywords": ["android", "gradle", "flavors", "firebase", "mobile", "codex", "figma", "flutter", "design-system"],
+  "keywords": [
+    "android",
+    "gradle",
+    "flavors",
+    "firebase",
+    "mobile",
+    "codex",
+    "figma",
+    "flutter",
+    "design-system"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Mobile App Config",
@@ -17,7 +27,10 @@
     "longDescription": "Deterministic mobile app setup workflows for Android product flavors, Firebase google-services.json files, package names, flavor-specific app names, generated assets, optional network security, and Figma or text design tokens to Flutter design-system Dart exports.",
     "developerName": "dthuy62",
     "category": "Developer Tools",
-    "capabilities": ["Read", "Write"],
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
     "websiteURL": "https://github.com/dthuy62/mobile-app-config",
     "defaultPrompt": [
       "Use Mobile App Config to configure dev and prod Android flavors.",

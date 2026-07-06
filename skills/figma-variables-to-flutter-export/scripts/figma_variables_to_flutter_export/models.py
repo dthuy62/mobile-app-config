@@ -46,10 +46,17 @@ class ColorToken:
 
 
 @dataclass(frozen=True)
+class NonColorToken:
+    field: str
+    group: str
+    source_name: str
+    values_by_mode_name: dict[str, str]
+
+
+@dataclass(frozen=True)
 class LayerReport:
     layer: str
     aliases: int
     multi_mode: int
     palette_like: int
     groups: list[str]
-

@@ -11,7 +11,7 @@ If a repository-skill exists for the current Flutter project, use it before runn
 
 ## Quick Start
 
-For supported JSON color exports, use the bundled CLI at `scripts/figma-variables-to-flutter-export`, resolved relative to this `SKILL.md`.
+For supported JSON exports, use the bundled CLI at `scripts/figma-variables-to-flutter-export`, resolved relative to this `SKILL.md`.
 
 ```bash
 figma-variables-to-flutter-export file.json \
@@ -37,13 +37,13 @@ dart format lib/core/design_system/app_colors.dart
 flutter analyze
 ```
 
-For Figma MCP/plugin input, export local variables from the current Figma file first, then feed supported color JSON to the CLI or generate non-color Dart directly.
+For Figma MCP/plugin input, export local variables from the current Figma file first, then feed supported JSON to the CLI.
 
-For plain text input, parse the user's tokens and generate Dart directly in the output shape below. Do not create a temporary JSON file just to satisfy the CLI unless using the existing JSON color pipeline is the shortest reliable path.
+For plain text input, parse the user's tokens and generate Dart directly in the output shape below. Do not create a temporary JSON file just to satisfy the CLI unless using the existing JSON pipeline is the shortest reliable path.
 
 ## Core Rules
 
-1. Prefer the bundled script for supported JSON color exports.
+1. Prefer the bundled script for supported JSON exports.
 2. Do not scan the repository as part of this skill.
 3. Use repository-skill or explicit prompt context for path, class names, architecture, and integration details.
 4. Generate only requested variable groups.
@@ -56,7 +56,7 @@ For plain text input, parse the user's tokens and generate Dart directly in the 
 
 ### JSON file
 
-Use the bundled CLI when the token type is supported. In V1, the CLI supports colors only.
+Use the bundled CLI when the token type is supported. The CLI supports colors, typography, spacing, radius, and shadow JSON exports.
 
 Use JSON color inputs with clear base/system separation, selected collections, or aliases to generate `app_color_base.dart` and `app_colors.dart` as appropriate.
 
@@ -116,11 +116,11 @@ scripts/figma-variables-to-flutter-export
 
 The pipeline mirrors Style Dictionary's shape without adding Node.js: parse raw JSON, normalize variables into color tokens, classify base/system layer, resolve aliases, validate unsafe output, then render Dart.
 
-## Supported V1 Export
+## Supported JSON Export
 
 ### Colors
 
-The bundled CLI is the deterministic path for supported JSON color exports. Figma MCP/plugin and plain text inputs may still generate the same Dart output shape, but only JSON colors currently go through the CLI.
+The bundled CLI is the deterministic path for supported JSON color exports. Figma MCP/plugin and plain text inputs may still generate the same Dart output shape.
 
 The colors exporter auto-detects token layer:
 
@@ -236,6 +236,25 @@ Aliases are resolved when a value has this shape:
 
 Alias cycles fail the export.
 
+### Typography, Spacing, Radius, Shadow
+
+The CLI also accepts nested design-token JSON with `$type` and `$value`:
+
+```bash
+figma-variables-to-flutter-export tokens.json \
+  --type spacing \
+  --output lib/core/design_system/app_spacing.dart
+```
+
+Supported non-color value shapes:
+
+- Spacing: numeric values, including `"8px"` and `{"value": 8}`.
+- Radius: numeric values rendered as `BorderRadius.all(Radius.circular(...))`.
+- Shadow: object or list with `x`/`offsetX`, `y`/`offsetY`, `blur`/`blurRadius`, `spread`/`spreadRadius`, and hex `color`.
+- Typography: `fontFamily`, `fontSize`, `lineHeight` or `height`, `fontWeight`, `letterSpacing`, and literal hex `color`.
+
+Non-color exports generate the same static class, `ThemeExtension`, and `BuildContext` accessor contract as semantic colors.
+
 ## Repository-Skill Pattern
 
 Strong usage:
@@ -262,9 +281,9 @@ Plain text usage:
 Use $figma-variables-to-flutter-export. Generate app_radius.dart and app_shadow.dart from these tokens: radius sm 4, md 8, lg 16; card shadow 0 8 24 #0000001F.
 ```
 
-## Non-Color Groups
+## Plain-Text Non-Color Groups
 
-Typography, spacing, radius, and shadow are agent-generated for now unless a later CLI adds support. Follow the output contract above:
+For plain-text typography, spacing, radius, and shadow input, generate Dart directly unless converting to the supported JSON contract is clearly shorter. Follow the output contract above:
 
 - explicit output path
 - deterministic Dart out

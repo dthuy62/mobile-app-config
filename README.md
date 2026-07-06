@@ -138,12 +138,16 @@ mobile-app-config network-security
 mobile-app-config validate-network-security
 ```
 
-Export Figma Variables JSON to Flutter colors with the bundled CLI:
+Export Figma Variables JSON to Flutter design-system files with the bundled CLI:
 
 ```bash
 skills/figma-variables-to-flutter-export/scripts/figma-variables-to-flutter-export file.json \
   --type colors \
   --output lib/core/design_system/app_colors.dart
+
+skills/figma-variables-to-flutter-export/scripts/figma-variables-to-flutter-export tokens.json \
+  --type spacing \
+  --output lib/core/design_system/app_spacing.dart
 ```
 
 This exporter does not scan the repository. Use a repository-specific skill or explicit prompt context to choose the correct output path and integration style.

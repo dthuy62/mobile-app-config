@@ -5,7 +5,15 @@ import json
 from .colors import ColorTokenBuilder, LayerClassifier, build_base_index
 from .dart_renderer import DartColorRenderer
 from .models import ExportOptions, Warn
+from .non_colors import DartNonColorRenderer, NonColorTokenBuilder
 from .variables import VariableParser
+
+
+class ExportPipeline:
+    def run(self, options: ExportOptions, *, warn: Warn) -> str:
+        if options.token_type == "colors":
+            return ColorExportPipeline().run(options, warn=warn)
+        return NonColorExportPipeline().run(options, warn=warn)
 
 
 class ColorExportPipeline:
@@ -54,3 +62,35 @@ class ColorExportPipeline:
         base_variables = self.parser.parse(base_data)
         return build_base_index(base_variables, warn)
 
+
+class NonColorExportPipeline:
+    def __init__(
+        self,
+        *,
+        parser: VariableParser | None = None,
+        token_builder: NonColorTokenBuilder | None = None,
+        renderer: DartNonColorRenderer | None = None,
+    ) -> None:
+        self.parser = parser or VariableParser()
+        self.token_builder = token_builder or NonColorTokenBuilder()
+        self.renderer = renderer or DartNonColorRenderer()
+
+    def run(self, options: ExportOptions, *, warn: Warn) -> str:
+        data = json.loads(options.json_file.read_text())
+        variables = self.parser.parse(data)
+        tokens = self.token_builder.build(
+            variables,
+            options.token_type,
+            strict=options.strict,
+            warn=warn,
+        )
+        if not tokens:
+            raise ValueError(f"No {options.token_type.upper()} variables found in input JSON.")
+
+        return self.renderer.render(
+            tokens=tokens,
+            token_type=options.token_type,
+            class_prefix=options.class_prefix,
+            light_mode=options.light_mode,
+            dark_mode=options.dark_mode,
+        )

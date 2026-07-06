@@ -486,3 +486,206 @@ def test_duplicate_fields_fail_with_source_paths(tmp_path: Path) -> None:
     assert "Duplicate Dart field names detected" in result.stderr
     assert "Black/Black-50" in result.stderr
     assert "Black/Black 50" in result.stderr
+
+
+def test_exports_spacing_tokens_to_dart(tmp_path: Path) -> None:
+    source = tmp_path / "spacing.json"
+    output = tmp_path / "app_spacing.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "Spacing": {
+                    "Sm": {"$type": "spacing", "$value": 4},
+                    "Md": {"$type": "spacing", "$value": {"value": "8px"}},
+                }
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "spacing", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "abstract final class AppSpacing" in dart
+    assert "static const double spacingSm = 4.0;" in dart
+    assert "static const double spacingMd = 8.0;" in dart
+    assert "class AppSpacingTheme extends ThemeExtension<AppSpacingTheme>" in dart
+    assert "AppSpacingTheme get appSpacing" in dart
+
+
+def test_exports_radius_tokens_to_dart(tmp_path: Path) -> None:
+    source = tmp_path / "radius.json"
+    output = tmp_path / "app_radius.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "Radius": {
+                    "Card": {"$type": "radius", "$value": 12},
+                }
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "radius", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "abstract final class AppRadius" in dart
+    assert "static const BorderRadius radiusCard = BorderRadius.all(" in dart
+    assert "Radius.circular(12.0)" in dart
+    assert "BorderRadius.lerp(radiusCard, other.radiusCard, t)!" in dart
+
+
+def test_exports_shadow_tokens_to_dart(tmp_path: Path) -> None:
+    source = tmp_path / "shadow.json"
+    output = tmp_path / "app_shadow.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "Shadow": {
+                    "Card": {
+                        "$type": "shadow",
+                        "$value": {"x": 0, "y": 8, "blur": 24, "spread": 0, "color": "#0000001F"},
+                    }
+                }
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "shadow", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "abstract final class AppShadow" in dart
+    assert "static const List<BoxShadow> shadowCard = const [" in dart
+    assert "BoxShadow(" in dart
+    assert "color: Color(0x1F000000)" in dart
+    assert "offset: Offset(0.0, 8.0)" in dart
+    assert "BoxShadow.lerpList(shadowCard, other.shadowCard, t)!" in dart
+
+
+def test_exports_typography_tokens_to_dart(tmp_path: Path) -> None:
+    source = tmp_path / "typography.json"
+    output = tmp_path / "app_typography.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "Typography": {
+                    "Body": {
+                        "$type": "typography",
+                        "$value": {
+                            "fontFamily": "Inter",
+                            "fontSize": 16,
+                            "lineHeight": 1.5,
+                            "fontWeight": "600",
+                            "letterSpacing": 0.2,
+                            "color": "#1A2438",
+                        },
+                    }
+                }
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "typography", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "abstract final class AppTypography" in dart
+    assert "static const TextStyle typographyBody = TextStyle(" in dart
+    assert "fontFamily: 'Inter'" in dart
+    assert "fontSize: 16.0" in dart
+    assert "letterSpacing: 0.2" in dart
+    assert "height: 1.5" in dart
+    assert "fontWeight: FontWeight.w600" in dart
+    assert "color: Color(0xFF1A2438)" in dart
+    assert "TextStyle.lerp(typographyBody, other.typographyBody, t)!" in dart
+
+
+def test_exports_non_color_dark_tokens_to_theme(tmp_path: Path) -> None:
+    source = tmp_path / "spacing.json"
+    output = tmp_path / "app_spacing.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "collections": [
+                    {
+                        "name": "Spacing",
+                        "modes": [
+                            {"modeId": "light", "name": "Light"},
+                            {"modeId": "dark", "name": "Dark"},
+                        ],
+                        "variables": [
+                            {
+                                "id": "gap",
+                                "name": "spacing/gap",
+                                "resolvedType": "FLOAT",
+                                "valuesByMode": {"light": 8, "dark": 10},
+                            }
+                        ],
+                    }
+                ]
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "spacing", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "abstract final class AppSpacingDark" in dart
+    assert "static const double spacingGap = 10.0;" in dart
+    assert "static const dark = AppSpacingTheme(" in dart
+    assert "spacingGap: AppSpacingDark.spacingGap," in dart
+
+
+def test_duplicate_non_color_fields_fail_with_source_paths(tmp_path: Path) -> None:
+    source = tmp_path / "spacing.json"
+    output = tmp_path / "app_spacing.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "Spacing": {
+                    "Gap-sm": {"$type": "spacing", "$value": 4},
+                    "Gap sm": {"$type": "spacing", "$value": 8},
+                }
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "spacing", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "Duplicate Dart field names detected" in result.stderr
+    assert "Spacing/Gap-sm" in result.stderr
+    assert "Spacing/Gap sm" in result.stderr
