@@ -622,6 +622,118 @@ def test_exports_typography_tokens_to_dart(tmp_path: Path) -> None:
     assert "TextStyle.lerp(typographyBody, other.typographyBody, t)!" in dart
 
 
+def test_exports_split_typography_tokens_to_dart(tmp_path: Path) -> None:
+    source = tmp_path / "typography.json"
+    output = tmp_path / "app_typography.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "Typography": {
+                    "Body": {
+                        "Italic": {
+                            "font-family": {"$type": "string", "$value": "Nunito"},
+                            "font-size": {"$type": "number", "$value": 16},
+                            "font-weight-italic": {"$type": "string", "$value": "Italic"},
+                            "line-height": {"$type": "number", "$value": 20},
+                            "letter-spacing": {"$type": "number", "$value": 0},
+                        }
+                    }
+                }
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "typography", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "static const TextStyle typographyBodyItalic = TextStyle(" in dart
+    assert "fontFamily: 'Nunito'" in dart
+    assert "fontSize: 16.0" in dart
+    assert "height: 1.25" in dart
+    assert "letterSpacing: 0.0" in dart
+    assert "fontStyle: FontStyle.italic" in dart
+
+
+def test_exports_root_number_spacing_without_radius_leakage(tmp_path: Path) -> None:
+    source = tmp_path / "spacing.json"
+    output = tmp_path / "app_spacing.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "spacing-0,25": {"$type": "number", "$value": 2},
+                "spacing-1,5": {"$type": "number", "$value": 12},
+                "spacing-15": {"$type": "number", "$value": 120},
+                "radius-2px": {
+                    "$type": "number",
+                    "$value": 2,
+                    "$extensions": {"com.figma.scopes": ["CORNER_RADIUS"]},
+                },
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "spacing", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "static const double spacing0p25 = 2.0;" in dart
+    assert "static const double spacing1p5 = 12.0;" in dart
+    assert "static const double spacing15 = 120.0;" in dart
+    assert "radius2px" not in dart
+
+
+def test_exports_root_number_radius_without_spacing_leakage(tmp_path: Path) -> None:
+    source = tmp_path / "radius.json"
+    output = tmp_path / "app_radius.dart"
+    source.write_text(
+        json.dumps(
+            {
+                "radius-2px": {
+                    "$type": "number",
+                    "$value": 2,
+                    "$extensions": {"com.figma.scopes": ["CORNER_RADIUS"]},
+                },
+                "radius-4px": {
+                    "$type": "number",
+                    "$value": 4,
+                    "$extensions": {"com.figma.scopes": ["CORNER_RADIUS"]},
+                },
+                "radius-6px": {
+                    "$type": "number",
+                    "$value": 6,
+                    "$extensions": {"com.figma.scopes": ["CORNER_RADIUS"]},
+                },
+                "spacing-1,5": {"$type": "number", "$value": 12},
+            }
+        )
+    )
+
+    result = subprocess.run(
+        [str(SCRIPT), str(source), "--type", "radius", "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    dart = output.read_text()
+    assert "static const BorderRadius radius2px = BorderRadius.all(" in dart
+    assert "static const BorderRadius radius4px = BorderRadius.all(" in dart
+    assert "static const BorderRadius radius6px = BorderRadius.all(" in dart
+    assert "spacing1p5" not in dart
+
+
 def test_exports_non_color_dark_tokens_to_theme(tmp_path: Path) -> None:
     source = tmp_path / "spacing.json"
     output = tmp_path / "app_spacing.dart"

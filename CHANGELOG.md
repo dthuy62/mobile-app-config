@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1
+
+- Fixed Figma Variables CLI exports for split typography, decimal spacing names, and root-level radius number tokens.
+- Kept spacing and radius number exports strictly filtered by token name or Figma scope.
+
 ## 1.2.0
 
 - Added JSON CLI exports for spacing, radius, shadow, and typography design tokens.

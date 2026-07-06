@@ -15,6 +15,16 @@ TOKEN_TYPES = {
     "typography": {"TYPOGRAPHY", "TEXTSTYLE", "TEXT_STYLE"},
 }
 
+GENERIC_NUMBER_TYPES = {"DIMENSION", "FLOAT", "NUMBER"}
+SPACING_SCOPES = {"GAP"}
+RADIUS_SCOPES = {"CORNER_RADIUS"}
+TYPOGRAPHY_PARTS = {
+    "font-family": "fontFamily",
+    "font-size": "fontSize",
+    "font-weight": "fontWeight",
+    "letter-spacing": "letterSpacing",
+}
+
 CLASS_SUFFIX = {
     "spacing": "Spacing",
     "radius": "Radius",
@@ -35,8 +45,8 @@ class NonColorTokenBuilder:
         field_sources: dict[str, list[str]] = {}
         tokens: list[NonColorToken] = []
 
-        for var in variables:
-            if canonical_type(var.resolved_type) not in TOKEN_TYPES[token_type]:
+        for var in variables + split_typography_variables(variables, token_type):
+            if not matches_token_type(var, token_type):
                 continue
             token = self._build_one(var, token_type)
             field_sources.setdefault(token.field, []).append(token.source_name)
@@ -51,7 +61,7 @@ class NonColorTokenBuilder:
             values[mode_name] = render_value(token_type, raw_value)
 
         return NonColorToken(
-            field=dart_field_name(var.name),
+            field=non_color_field_name(var.name, token_type),
             group=token_group_name(var.name),
             source_name=var.name,
             values_by_mode_name=values,
@@ -276,6 +286,8 @@ def render_text_style(value: Any) -> str:
         fields.append(f"height: {render_double(line_height)}")
     if "fontWeight" in value:
         fields.append(f"fontWeight: {render_font_weight(value['fontWeight'])}")
+    if "fontStyle" in value:
+        fields.append(f"fontStyle: {render_font_style(value['fontStyle'])}")
     if "color" in value:
         fields.append(f"color: {render_color(value['color'])}")
     return "TextStyle(\n    " + ",\n    ".join(fields) + ",\n  )"
@@ -293,6 +305,10 @@ def render_font_weight(value: Any) -> str:
     number = int(value)
     number = max(100, min(900, round(number / 100) * 100))
     return f"FontWeight.w{number}"
+
+
+def render_font_style(value: Any) -> str:
+    return "FontStyle.italic" if str(value).lower() == "italic" else "FontStyle.normal"
 
 
 def render_color(value: Any) -> str:
@@ -331,6 +347,80 @@ def validate_duplicate_fields(
 
 def canonical_type(value: str) -> str:
     return re.sub(r"[^A-Z0-9]+", "_", value.upper()).strip("_")
+
+
+def matches_token_type(var: Variable, token_type: str) -> bool:
+    resolved_type = canonical_type(var.resolved_type)
+    if resolved_type not in TOKEN_TYPES[token_type]:
+        return False
+    if token_type not in {"spacing", "radius"} or resolved_type not in GENERIC_NUMBER_TYPES:
+        return True
+    return has_type_name(var.name, token_type) or has_type_scope(var.scopes, token_type)
+
+
+def has_type_name(name: str, token_type: str) -> bool:
+    normalized = re.sub(r"[^a-z0-9]+", "", name.split("/", 1)[0].lower())
+    if token_type == "spacing":
+        return normalized.startswith(("spacing", "gap", "padding", "margin"))
+    return normalized.startswith(("radius", "radii", "borderradius", "cornerradius"))
+
+
+def has_type_scope(scopes: tuple[str, ...], token_type: str) -> bool:
+    normalized = {canonical_type(scope) for scope in scopes}
+    return bool(normalized & (SPACING_SCOPES if token_type == "spacing" else RADIUS_SCOPES))
+
+
+def non_color_field_name(name: str, token_type: str) -> str:
+    if token_type == "spacing":
+        name = re.sub(r"(?<=\d),(?=\d)", "p", name)
+    return dart_field_name(name)
+
+
+def split_typography_variables(variables: list[Variable], token_type: str) -> list[Variable]:
+    if token_type != "typography":
+        return []
+
+    by_parent: dict[str, dict[str, Variable]] = {}
+    for var in variables:
+        parent, _, raw_part = var.name.rpartition("/")
+        part = raw_part.lower()
+        if parent and (part in TYPOGRAPHY_PARTS or part in {"font-weight-italic", "line-height"}):
+            by_parent.setdefault(parent, {})[part] = var
+
+    result: list[Variable] = []
+    for parent, parts in by_parent.items():
+        if "font-family" not in parts or "font-size" not in parts:
+            continue
+        value: dict[str, Any] = {}
+        for part, key in TYPOGRAPHY_PARTS.items():
+            if part in parts:
+                value[key] = first_value(parts[part])
+        if "font-weight-italic" in parts:
+            value["fontStyle"] = "italic"
+        if "line-height" in parts:
+            font_size = parse_number(first_value(parts["font-size"]))
+            value["height"] = parse_number(first_value(parts["line-height"])) / font_size
+        result.append(
+            Variable(
+                id=parent,
+                name=parent,
+                resolved_type="TYPOGRAPHY",
+                values_by_mode={"default": value},
+                modes={"default": "default"},
+            )
+        )
+    return result
+
+
+def first_value(var: Variable) -> Any:
+    return next(iter(var.values_by_mode.values()))
+
+
+def parse_number(value: Any) -> float:
+    value = unwrap_value(value)
+    if isinstance(value, str) and value.strip().endswith("px"):
+        value = value.strip()[:-2]
+    return float(value)
 
 
 def class_name(prefix: str, suffix: str) -> str:

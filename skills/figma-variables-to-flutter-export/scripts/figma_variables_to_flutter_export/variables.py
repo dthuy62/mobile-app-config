@@ -105,8 +105,10 @@ def design_token_variable(node: dict[str, Any], path: list[str], token_type: Any
     extensions = node.get("$extensions")
     variable_id = None
     alias_target_name = None
+    scopes: tuple[str, ...] = ()
     if isinstance(extensions, dict):
         variable_id = extensions.get("com.figma.variableId")
+        scopes = parse_scopes(extensions.get("com.figma.scopes"))
         alias_data = extensions.get("com.figma.aliasData")
         if isinstance(alias_data, dict):
             alias_target_name = alias_data.get("targetVariableName")
@@ -118,6 +120,7 @@ def design_token_variable(node: dict[str, Any], path: list[str], token_type: Any
         values_by_mode={"default": node.get("$value")},
         modes={"default": "default"},
         alias_target_name=str(alias_target_name) if alias_target_name else None,
+        scopes=scopes,
     )
 
 
@@ -160,5 +163,11 @@ def parse_variable(raw_var: Any, modes: dict[str, str]) -> Variable | None:
         resolved_type=str(raw_var.get("resolvedType") or raw_var.get("resolved_type") or ""),
         values_by_mode=values_by_mode if isinstance(values_by_mode, dict) else {},
         modes=modes,
+        scopes=parse_scopes(raw_var.get("scopes") or raw_var.get("variableScopes") or raw_var.get("variable_scopes")),
     )
 
+
+def parse_scopes(raw_scopes: Any) -> tuple[str, ...]:
+    if not isinstance(raw_scopes, list):
+        return ()
+    return tuple(str(scope) for scope in raw_scopes)

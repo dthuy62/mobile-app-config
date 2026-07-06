@@ -33,6 +33,7 @@ class Variable:
     values_by_mode: dict[str, Any]
     modes: dict[str, str]
     alias_target_name: str | None = None
+    scopes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
