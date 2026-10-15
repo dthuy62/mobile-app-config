@@ -8,6 +8,8 @@
 - `package-name` no longer creates `android-app-config.json`; it updates the file only when it already exists. Run `init` first to keep a config file.
 - `package-name --app-name` renames every declared flavor and no longer creates resources for undeclared flavors.
 - Added `.claude-plugin/marketplace.json` so Claude Code can install the plugin with `claude plugin marketplace add dthuy62/mobile-app-config`.
+- Explicit `buildConfigFields` in a config file are no longer merged with the default `APP_ENVIRONMENT`/`APP_BASE_URL` fields; `init` on a project that already declares flavors keeps only its own fields.
+- `package-name` now also renames Room schema export directories (`<module>/schemas/<old.package>.*`) to the new package, and fails before any write if a target directory already exists.
 
 ## 1.2.1
 

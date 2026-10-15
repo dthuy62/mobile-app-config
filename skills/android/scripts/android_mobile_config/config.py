@@ -125,6 +125,10 @@ def normalize_config(raw: dict[str, Any]) -> dict[str, Any]:
     if isinstance(raw.get("flavors"), dict):
         # The file decides which flavors exist; defaults only fill fields of those flavors.
         config["flavors"] = {name: config["flavors"][name] for name in raw["flavors"]}
+        # BuildConfig fields written in the file are the project's own; never mix default keys into them.
+        for name, flavor in raw["flavors"].items():
+            if isinstance(flavor, dict) and isinstance(flavor.get("buildConfigFields"), dict):
+                config["flavors"][name]["buildConfigFields"] = deepcopy(flavor["buildConfigFields"])
     if not isinstance(config.get("flavors"), dict) or not config["flavors"]:
         raise ConfigError("Config must define at least one flavor")
     return config

@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from .helpers import copy_fixture, read_config, run_cli
+import sys
+
+from .helpers import ROOT, copy_fixture, read_config, run_cli
+
+sys.path.insert(0, str(ROOT / "skills" / "android" / "scripts"))
+
+from android_mobile_config.config import DEFAULT_CONFIG, normalize_config  # noqa: E402
 
 
 def test_missing_config_flavors_infers_defaults_without_config_file(tmp_path) -> None:
@@ -130,3 +136,40 @@ def test_existing_config_keeps_its_flavors(tmp_path) -> None:
     gradle = (project / "app" / "build.gradle.kts").read_text()
     assert 'create("stg")' not in gradle
     assert not (project / "app" / "src" / "stg").exists()
+
+
+def test_init_on_project_with_flavors_does_not_inject_default_build_config_fields(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_existing_flavors_app")
+    result = run_cli(project, "init")
+    assert result.returncode == 0, result.stderr
+    fields = read_config(project)["flavors"]["dev"]["buildConfigFields"]
+    assert "APP_ENVIRONMENT" not in fields
+    assert "APP_BASE_URL" not in fields
+    assert any(key.startswith("CAREER_OPS_") for key in fields)
+
+    result = run_cli(project, "flavors")
+    assert result.returncode == 0, result.stderr
+    assert "APP_BASE_URL" not in (project / "app" / "build.gradle.kts").read_text()
+    result = run_cli(project, "validate-flavors")
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_config_flavor_without_fields_gets_flavor_defaults() -> None:
+    config = normalize_config({"flavors": {"dev": {}}})
+    assert list(config["flavors"]) == ["dev"]
+    assert config["flavors"]["dev"] == DEFAULT_CONFIG["flavors"]["dev"]
+
+
+def test_config_explicit_build_config_fields_are_not_merged_with_defaults() -> None:
+    config = normalize_config(
+        {
+            "flavors": {
+                "qa": {"applicationIdSuffix": ".qa", "buildConfigFields": {"X": "1"}},
+                "dev": {"buildConfigFields": {}},
+            }
+        }
+    )
+    assert list(config["flavors"]) == ["qa", "dev"]
+    assert config["flavors"]["qa"]["buildConfigFields"] == {"X": "1"}
+    assert config["flavors"]["dev"]["buildConfigFields"] == {}
+    assert config["flavors"]["dev"]["applicationIdSuffix"] == ".dev"
