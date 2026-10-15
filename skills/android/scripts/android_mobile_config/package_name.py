@@ -99,8 +99,11 @@ def configure_package_name(
         old_source_package = resolve_source_package(extract_namespace(gradle_text), source_package_declarations(src))
     updated_gradle_text = update_gradle_package(gradle_text, target)
     updated_settings_text = update_root_project_name(root, root_project_name) if root_project_name else None
+    schema_moves = plan_schema_moves(root / config["module"] / "schemas", old_source_package, target) if sync_source_packages else []
     if sync_source_packages:
         sync_sources(src, old_source_package, target)
+        for old_dir, new_dir in schema_moves:
+            old_dir.rename(new_dir)
     gradle_path.write_text(updated_gradle_text)
     if updated_settings_text is not None:
         (root / "settings.gradle.kts").write_text(updated_settings_text)
@@ -111,6 +114,21 @@ def configure_package_name(
     if path.exists():
         write_config(path, config)
     return f"package name configured: {old_application_id} -> {target}"
+
+
+def plan_schema_moves(schemas: Path, old: str, new: str) -> list[tuple[Path, Path]]:
+    """Room exports schemas to <module>/schemas/<fully.qualified.Database>/N.json; follow the package rename."""
+    if not schemas.is_dir() or old == new:
+        return []
+    moves: list[tuple[Path, Path]] = []
+    for old_dir in sorted(schemas.iterdir()):
+        if not old_dir.is_dir() or not old_dir.name.startswith(old + "."):
+            continue
+        new_dir = schemas / (new + old_dir.name[len(old) :])
+        if new_dir.exists():
+            raise ConfigError(f"Cannot rename Room schema directory {old_dir}: {new_dir} already exists")
+        moves.append((old_dir, new_dir))
+    return moves
 
 
 def update_app_names(root: Path, config: dict[str, Any], app_name: str) -> None:

@@ -369,3 +369,45 @@ def test_package_name_updates_flavors_declared_only_in_existing_config(tmp_path)
     assert [config["flavors"][name]["appName"] for name in ("dev", "stg", "prod")] == ["[DEV] Demo", "[STG] Demo", "Demo"]
     stg_strings = project / "app" / "src" / "stg" / "res" / "values" / "strings.xml"
     assert '<string name="app_name">[STG] Demo</string>' in stg_strings.read_text()
+
+
+def test_package_name_renames_room_schema_directories(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    kotlin = project / "app" / "src" / "main" / "kotlin" / "com" / "example" / "noflavors" / "MainActivity.kt"
+    kotlin.parent.mkdir(parents=True)
+    kotlin.write_text("package com.example.noflavors\n")
+    old_schema = project / "app" / "schemas" / "com.example.noflavors.data.AppDb" / "1.json"
+    old_schema.parent.mkdir(parents=True)
+    old_schema.write_text('{"version": 1}')
+    other = project / "app" / "schemas" / "org.other.Db" / "1.json"
+    other.parent.mkdir(parents=True)
+    other.write_text("{}")
+
+    result = run_cli(project, "package-name", "--application-id", "com.acme.demo")
+
+    assert result.returncode == 0, result.stderr
+    assert (project / "app" / "schemas" / "com.acme.demo.data.AppDb" / "1.json").read_text() == '{"version": 1}'
+    assert not (project / "app" / "schemas" / "com.example.noflavors.data.AppDb").exists()
+    assert other.exists()
+
+
+def test_package_name_schema_conflict_fails_before_writes(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    kotlin = project / "app" / "src" / "main" / "kotlin" / "com" / "example" / "noflavors" / "MainActivity.kt"
+    kotlin.parent.mkdir(parents=True)
+    kotlin.write_text("package com.example.noflavors\n")
+    old_schema = project / "app" / "schemas" / "com.example.noflavors.data.AppDb" / "1.json"
+    old_schema.parent.mkdir(parents=True)
+    old_schema.write_text("{}")
+    clash = project / "app" / "schemas" / "com.acme.demo.data.AppDb" / "1.json"
+    clash.parent.mkdir(parents=True)
+    clash.write_text("{}")
+    gradle_before = (project / "app" / "build.gradle.kts").read_text()
+
+    result = run_cli(project, "package-name", "--application-id", "com.acme.demo")
+
+    assert result.returncode != 0
+    assert "schemas" in result.stderr
+    assert (project / "app" / "build.gradle.kts").read_text() == gradle_before
+    assert kotlin.read_text() == "package com.example.noflavors\n"
+    assert old_schema.exists()
