@@ -163,7 +163,7 @@ mobile-app-config package-name --application-id com.aistudio.taskarena.kymzap
 mobile-app-config validate-package-name
 ```
 
-The command updates app `namespace`, `defaultConfig.applicationId`, Kotlin/Java package folders, package declarations, and imports that reference the old package prefix. Optional `--app-name` updates display-name resources for `main`, `dev`, and `prod`; optional `--root-project-name` updates `settings.gradle.kts`. Flavor `applicationIdSuffix` values are preserved.
+The command updates app `namespace`, `defaultConfig.applicationId`, Kotlin/Java package folders, package declarations, and imports that reference the old package prefix. Optional `--app-name` updates display-name resources for `main` and for every flavor the project declares (`[DEV] Name`, `[STG] Name`, `Name` for `prod`), without creating resources for undeclared flavors; `android-app-config.json` is updated only if it already exists; optional `--root-project-name` updates `settings.gradle.kts`. Flavor `applicationIdSuffix` values are preserved.
 
 ### Android app icons and splash screens
 

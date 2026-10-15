@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
 
-from .config import ConfigError, config_path, write_config
+from .config import ConfigError, config_path, flavor_app_name, infer_flavors, write_config
 from .gradle_kts import find_block_range, infer_application_id
 
 KEYWORDS = {
@@ -107,7 +107,9 @@ def configure_package_name(
     if app_name:
         update_app_names(root, config, app_name)
     config.setdefault("packageName", {})["applicationId"] = target
-    write_config(config_path(root), config)
+    path = config_path(root)
+    if path.exists():
+        write_config(path, config)
     return f"package name configured: {old_application_id} -> {target}"
 
 
@@ -115,15 +117,20 @@ def update_app_names(root: Path, config: dict[str, Any], app_name: str) -> None:
     module = config["module"]
     update_or_create_app_name_resource(root / module / "src" / "main" / "res" / "values" / "strings.xml", app_name)
     flavors = config.get("flavors", {})
-    if "dev" in flavors:
-        flavors["dev"]["appName"] = f"[DEV] {app_name}"
-        update_or_create_app_name_resource(
-            root / module / "src" / "dev" / "res" / "values" / "strings.xml",
-            flavors["dev"]["appName"],
-        )
-    if "prod" in flavors:
-        flavors["prod"]["appName"] = app_name
-        update_or_create_app_name_resource(root / module / "src" / "prod" / "res" / "values" / "strings.xml", app_name)
+    for flavor in sorted(declared_flavor_names(root, config)):
+        name = flavor_app_name(flavor, app_name)
+        if flavor in flavors:
+            flavors[flavor]["appName"] = name
+        update_or_create_app_name_resource(root / module / "src" / flavor / "res" / "values" / "strings.xml", name)
+
+
+def declared_flavor_names(root: Path, config: dict[str, Any]) -> set[str]:
+    """Flavors the project actually has: listed in an existing config file or in Gradle productFlavors."""
+    gradle_text = (root / config["module"] / "build.gradle.kts").read_text()
+    names = set(infer_flavors(gradle_text, ""))
+    if config_path(root).exists():
+        names |= set(config.get("flavors", {}))
+    return names
 
 
 def update_or_create_app_name_resource(path: Path, app_name: str) -> None:

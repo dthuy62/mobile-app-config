@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from .helpers import copy_fixture, read_config, run_cli
 
 
@@ -51,7 +53,7 @@ def test_package_name_updates_gradle_and_sources(tmp_path) -> None:
     assert "package com.aistudio.taskarena.kymzap" in moved_kotlin.read_text()
     assert "import com.aistudio.taskarena.kymzap.DebugOnly" in moved_kotlin.read_text()
     assert "package com.aistudio.taskarena.kymzap;" in moved_java.read_text()
-    assert read_config(project)["packageName"]["applicationId"] == "com.aistudio.taskarena.kymzap"
+    assert not (project / "android-app-config.json").exists()
 
 
 def test_package_name_app_name_updates_main_and_flavor_resources(tmp_path) -> None:
@@ -64,6 +66,7 @@ def test_package_name_app_name_updates_main_and_flavor_resources(tmp_path) -> No
         '    <string name="keep_me">Keep me</string>\n'
         "</resources>\n"
     )
+    assert run_cli(project, "init").returncode == 0
 
     result = run_cli(project, "package-name", "--application-id", "me.dthuy.careerops", "--app-name", "My App")
 
@@ -79,7 +82,10 @@ def test_package_name_app_name_updates_main_and_flavor_resources(tmp_path) -> No
     config = read_config(project)
     assert config["flavors"]["dev"]["appName"] == "[DEV] My App"
     assert config["flavors"]["prod"]["appName"] == "My App"
-    assert config["flavors"]["staging"]["appName"] == "[STAGING] Career Ops"
+    assert config["flavors"]["staging"]["appName"] == "[STAGING] My App"
+    assert "<string name=\"app_name\">[STAGING] My App</string>" in (
+        project / "app" / "src" / "staging" / "res" / "values" / "strings.xml"
+    ).read_text()
 
 
 def test_package_name_root_project_name_updates_settings(tmp_path) -> None:
@@ -146,11 +152,11 @@ def test_package_name_is_idempotent_and_updates_firebase_packages(tmp_path) -> N
     first = run_cli(project, "package-name", "--application-id", "com.aistudio.taskarena.kymzap")
     assert first.returncode == 0, first.stderr
     gradle = project / "app" / "build.gradle.kts"
-    config = project / "android-app-config.json"
-    before = (gradle.read_text(), config.read_text())
+    before = gradle.read_text()
     second = run_cli(project, "package-name", "--application-id", "com.aistudio.taskarena.kymzap")
     assert second.returncode == 0, second.stderr
-    assert (gradle.read_text(), config.read_text()) == before
+    assert gradle.read_text() == before
+    assert not (project / "android-app-config.json").exists()
 
     firebase = run_cli(project, "firebase")
 
@@ -186,14 +192,14 @@ def test_package_name_updates_divergent_identities(tmp_path) -> None:
     assert "package me.dthuy.careerops.ui" in moved_activity.read_text()
     assert "import me.dthuy.careerops.data.User" in moved_activity.read_text()
     assert "package me.dthuy.careerops.data" in moved_user.read_text()
-    assert read_config(project)["packageName"]["applicationId"] == "me.dthuy.careerops"
+    assert not (project / "android-app-config.json").exists()
     assert run_cli(project, "validate-package-name").returncode == 0
 
-    before = (gradle.read_text(), moved_activity.read_text(), moved_user.read_text(), read_config(project))
+    before = (gradle.read_text(), moved_activity.read_text(), moved_user.read_text())
     second = run_cli(project, "package-name", "--application-id", "me.dthuy.careerops")
 
     assert second.returncode == 0, second.stderr
-    assert (gradle.read_text(), moved_activity.read_text(), moved_user.read_text(), read_config(project)) == before
+    assert (gradle.read_text(), moved_activity.read_text(), moved_user.read_text()) == before
 
 
 def test_package_name_rewrites_inline_fully_qualified_source_refs(tmp_path) -> None:
@@ -289,6 +295,11 @@ def test_validate_package_name_reports_stale_identity_errors(tmp_path) -> None:
     project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
     result = run_cli(project, "package-name", "--application-id", "me.dthuy.careerops")
     assert result.returncode == 0, result.stderr
+    assert run_cli(project, "init").returncode == 0
+    config_file = project / "android-app-config.json"
+    config = json.loads(config_file.read_text())
+    config["packageName"]["applicationId"] = "me.dthuy.careerops"
+    config_file.write_text(json.dumps(config))
     gradle = project / "app" / "build.gradle.kts"
     gradle.write_text(
         gradle.read_text()
@@ -305,3 +316,56 @@ def test_validate_package_name_reports_stale_identity_errors(tmp_path) -> None:
     assert "applicationId does not match me.dthuy.careerops" in validate.stderr
     assert "namespace does not match me.dthuy.careerops" in validate.stderr
     assert f"Stale package declaration in {stale}" in validate.stderr
+
+
+def test_package_name_without_config_creates_no_config_or_flavor_dirs(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+
+    result = run_cli(project, "package-name", "--application-id", "com.acme.demo", "--app-name", "Demo")
+
+    assert result.returncode == 0, result.stderr
+    assert not (project / "android-app-config.json").exists()
+    for flavor in ("dev", "stg", "prod"):
+        assert not (project / "app" / "src" / flavor).exists()
+    strings = project / "app" / "src" / "main" / "res" / "values" / "strings.xml"
+    assert '<string name="app_name">Demo</string>' in strings.read_text()
+
+
+def test_package_name_app_name_only_touches_declared_flavors(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    gradle = project / "app" / "build.gradle.kts"
+    gradle.write_text(
+        gradle.read_text().replace(
+            "  signingConfigs {",
+            '  flavorDimensions += "environment"\n\n'
+            "  productFlavors {\n"
+            '    create("dev") {\n'
+            '      dimension = "environment"\n'
+            "    }\n"
+            "  }\n\n"
+            "  signingConfigs {",
+        )
+    )
+
+    result = run_cli(project, "package-name", "--application-id", "com.acme.demo", "--app-name", "Demo")
+
+    assert result.returncode == 0, result.stderr
+    dev_strings = project / "app" / "src" / "dev" / "res" / "values" / "strings.xml"
+    assert '<string name="app_name">[DEV] Demo</string>' in dev_strings.read_text()
+    assert not (project / "app" / "src" / "stg").exists()
+    assert not (project / "app" / "src" / "prod").exists()
+    assert not (project / "android-app-config.json").exists()
+
+
+def test_package_name_updates_flavors_declared_only_in_existing_config(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    assert run_cli(project, "init").returncode == 0
+
+    result = run_cli(project, "package-name", "--application-id", "com.acme.demo", "--app-name", "Demo")
+
+    assert result.returncode == 0, result.stderr
+    config = read_config(project)
+    assert config["packageName"]["applicationId"] == "com.acme.demo"
+    assert [config["flavors"][name]["appName"] for name in ("dev", "stg", "prod")] == ["[DEV] Demo", "[STG] Demo", "Demo"]
+    stg_strings = project / "app" / "src" / "stg" / "res" / "values" / "strings.xml"
+    assert '<string name="app_name">[STG] Demo</string>' in stg_strings.read_text()
