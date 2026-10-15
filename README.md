@@ -2,7 +2,7 @@
 
 Mobile App Config is a Codex plugin for configuring mobile app environments from agent workflows. It gives Codex deterministic commands for Android product flavors, package names, Firebase multi-flavor config, flavor-specific app names, Android app assets, optional network-security XML, and design tokens to Flutter design-system Dart export.
 
-The plugin is designed for Codex Marketplace distribution first. Claude Code and standalone skill installs are supported as manual compatibility paths.
+The plugin supports two install paths: the Codex Marketplace and the Claude Code marketplace (`claude plugin marketplace add dthuy62/mobile-app-config`). Standalone skill installs remain available as a manual path.
 
 ## Features
 
@@ -177,7 +177,7 @@ mobile-app-config package-name --application-id com.aistudio.taskarena.kymzap
 mobile-app-config validate-package-name
 ```
 
-The command updates app `namespace`, `defaultConfig.applicationId`, Kotlin/Java package folders, package declarations, and imports that reference the old package prefix. Optional `--app-name` updates display-name resources for `main` and for every flavor the project declares (`[DEV] Name`, `[STG] Name`, `Name` for `prod`), without creating resources for undeclared flavors; `android-app-config.json` is updated only if it already exists; optional `--root-project-name` updates `settings.gradle.kts`. Flavor `applicationIdSuffix` values are preserved.
+The command updates app `namespace`, `defaultConfig.applicationId`, Kotlin/Java package folders, package declarations, and imports that reference the old package prefix. Optional `--app-name` updates display-name resources for `main` and for every flavor the project declares (`[DEV] Name`, `[STG] Name`, `Name` for `prod`), without creating resources for undeclared flavors; `android-app-config.json` is updated only if it already exists; optional `--root-project-name` updates `settings.gradle.kts`. Flavor `applicationIdSuffix` values are preserved. Room schema export directories (`<module>/schemas/<old.package>.<Database>/`) are renamed to the new package; the command fails before writing anything if a target directory already exists.
 
 ### Android app icons and splash screens
 
@@ -274,6 +274,7 @@ Default behavior:
 mobile-app-config/
   .agents/plugins/marketplace.json      Codex marketplace catalog
   .codex-plugin/plugin.json             Codex plugin manifest
+  .claude-plugin/marketplace.json       Claude Code marketplace catalog
   .claude-plugin/plugin.json            Claude Code plugin manifest
   skills/
     android/              Canonical Android skill with CLI and references
