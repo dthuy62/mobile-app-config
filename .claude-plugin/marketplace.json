@@ -1,0 +1,14 @@
+{
+  "name": "mobile-app-config",
+  "description": "Deterministic mobile app configuration for coding agents",
+  "owner": {
+    "name": "dthuy62"
+  },
+  "plugins": [
+    {
+      "name": "mobile-app-config",
+      "source": "./",
+      "description": "Android flavors, package names, Firebase, assets, network security, design tokens"
+    }
+  ]
+}

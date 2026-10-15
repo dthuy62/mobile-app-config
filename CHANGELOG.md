@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0
+
+- Default flavor set is now `dev`, `stg`, `prod` (suffixes `.dev`, `.stg`, none). Projects without a config file get three flavors from `flavors`; `firebase --mode per-flavor` needs a `--flavor stg=...` mapping. Existing `android-app-config.json` files keep their own flavors.
+- Replaced project-specific defaults (`Career Ops`, `CAREER_OPS_*`) with neutral ones (`My App`, `APP_ENVIRONMENT`, `APP_BASE_URL`).
+- One flavor naming rule everywhere: `prod` keeps the app name; other flavors get `[DEV]`, `[STG]`, `[<FLAVOR>]` prefixes.
+- `package-name` no longer creates `android-app-config.json`; it updates the file only when it already exists. Run `init` first to keep a config file.
+- `package-name --app-name` renames every declared flavor and no longer creates resources for undeclared flavors.
+- Added `.claude-plugin/marketplace.json` so Claude Code can install the plugin with `claude plugin marketplace add dthuy62/mobile-app-config`.
+
 ## 1.2.1
 
 - Fixed Figma Variables CLI exports for split typography, decimal spacing names, and root-level radius number tokens.

@@ -79,19 +79,33 @@ codex plugin marketplace add ./mobile-app-config
 
 Restart Codex after changing plugin metadata or skills.
 
-### Claude Code Plugin Manual
+### Claude Code
 
-Claude Code is supported manually through the plugin directory.
+Add the marketplace and install the plugin:
 
 ```bash
-git clone https://github.com/dthuy62/mobile-app-config.git mobile-app-config
-claude --plugin-dir ./mobile-app-config
+claude plugin marketplace add dthuy62/mobile-app-config
+claude plugin install mobile-app-config@mobile-app-config
 ```
 
-Claude Code plugin metadata lives at:
+Skills are namespaced by the plugin, for example `/mobile-app-config:android` or
+`/mobile-app-config:android-flavors`.
 
-```text
-.claude-plugin/plugin.json
+A project can ask everyone who opens it to install the plugin by checking in `.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "mobile-app-config": { "source": { "source": "github", "repo": "dthuy62/mobile-app-config" } }
+  },
+  "enabledPlugins": { "mobile-app-config@mobile-app-config": true }
+}
+```
+
+For local plugin development, load the checkout directly:
+
+```bash
+claude --plugin-dir ./mobile-app-config
 ```
 
 ### Project-Specific Claude Plugin

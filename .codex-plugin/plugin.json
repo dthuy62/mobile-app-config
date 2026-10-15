@@ -1,6 +1,6 @@
 {
   "name": "mobile-app-config",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Configure mobile app projects and convert Figma or text design tokens into Flutter design-system Dart files from agent workflows.",
   "author": {
     "name": "dthuy62",

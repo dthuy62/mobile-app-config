@@ -100,3 +100,25 @@ def test_public_docs_document_only_supported_install_flows() -> None:
     ]
     for value in forbidden:
         assert value not in text
+
+
+def test_claude_marketplace_lists_the_plugin() -> None:
+    import json
+
+    marketplace = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text())
+    plugin = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())
+    assert marketplace["name"] == "mobile-app-config"
+    assert marketplace["owner"]["name"]
+    entries = {entry["name"]: entry for entry in marketplace["plugins"]}
+    assert plugin["name"] in entries
+    assert entries[plugin["name"]]["source"] == "./"
+
+
+def test_versions_match_across_manifests() -> None:
+    import json
+    import re
+
+    claude = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())["version"]
+    codex = json.loads((ROOT / ".codex-plugin" / "plugin.json").read_text())["version"]
+    pyproject = re.search(r'^version = "([^"]+)"', (ROOT / "pyproject.toml").read_text(), re.M).group(1)
+    assert claude == codex == pyproject == "1.3.0"
