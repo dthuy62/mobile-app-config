@@ -14,18 +14,26 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "flavors": {
         "dev": {
             "applicationIdSuffix": ".dev",
-            "appName": "[DEV] Career Ops",
+            "appName": "[DEV] My App",
             "buildConfigFields": {
-                "CAREER_OPS_ENVIRONMENT": "dev",
-                "CAREER_OPS_DEFAULT_BASE_URL": "http://10.0.2.2:3000",
+                "APP_ENVIRONMENT": "dev",
+                "APP_BASE_URL": "http://10.0.2.2:3000",
+            },
+        },
+        "stg": {
+            "applicationIdSuffix": ".stg",
+            "appName": "[STG] My App",
+            "buildConfigFields": {
+                "APP_ENVIRONMENT": "stg",
+                "APP_BASE_URL": "",
             },
         },
         "prod": {
             "applicationIdSuffix": "",
-            "appName": "Career Ops",
+            "appName": "My App",
             "buildConfigFields": {
-                "CAREER_OPS_ENVIRONMENT": "prod",
-                "CAREER_OPS_DEFAULT_BASE_URL": "",
+                "APP_ENVIRONMENT": "prod",
+                "APP_BASE_URL": "",
             },
         },
     },
@@ -41,6 +49,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "createApps": False,
         "flavors": {
             "dev": {"project": ""},
+            "stg": {"project": ""},
             "prod": {"project": ""},
         },
     },
@@ -73,6 +82,11 @@ class ConfigError(RuntimeError):
 
 def config_path(root: Path) -> Path:
     return root / CONFIG_NAME
+
+
+def flavor_app_name(flavor: str, app_name: str) -> str:
+    """prod keeps the plain name; every other flavor gets a prefix such as [DEV] or [STG]."""
+    return app_name if flavor == "prod" else f"[{flavor.upper()}] {app_name}"
 
 
 def load_or_init(root: Path, *, force: bool = False) -> tuple[dict[str, Any], bool]:
@@ -108,6 +122,9 @@ def write_config(path: Path, config: dict[str, Any]) -> None:
 def normalize_config(raw: dict[str, Any]) -> dict[str, Any]:
     config = deepcopy(DEFAULT_CONFIG)
     deep_update(config, raw)
+    if isinstance(raw.get("flavors"), dict):
+        # The file decides which flavors exist; defaults only fill fields of those flavors.
+        config["flavors"] = {name: config["flavors"][name] for name in raw["flavors"]}
     if not isinstance(config.get("flavors"), dict) or not config["flavors"]:
         raise ConfigError("Config must define at least one flavor")
     return config
@@ -139,8 +156,8 @@ def infer_config(root: Path) -> dict[str, Any]:
     if flavors:
         config["flavors"] = flavors
     else:
-        config["flavors"]["prod"]["appName"] = app_name
-        config["flavors"]["dev"]["appName"] = f"[DEV] {app_name}"
+        for name, flavor in config["flavors"].items():
+            flavor["appName"] = flavor_app_name(name, app_name)
     return config
 
 
@@ -181,10 +198,9 @@ def infer_flavors(text: str, app_name: str) -> dict[str, Any]:
             block,
         ):
             fields[field_match.group(1)] = _unquote_kotlin_string(field_match.group(2))
-        flavor_app_name = app_name if name == "prod" else f"[{name.upper()}] {app_name}"
         flavors[name] = {
             "applicationIdSuffix": suffix,
-            "appName": flavor_app_name,
+            "appName": flavor_app_name(name, app_name),
             "buildConfigFields": fields,
         }
     return flavors

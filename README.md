@@ -7,7 +7,7 @@ The plugin is designed for Codex Marketplace distribution first. Claude Code and
 ## Features
 
 - Configure Kotlin Gradle Android product flavors idempotently.
-- Create and validate `dev` and `prod` variants.
+- Create and validate `dev`, `stg` and `prod` variants.
 - Generate flavor-specific `app_name` resources.
 - Add `applicationIdSuffix` and `BuildConfig` fields from config or inferred defaults.
 - Sync Android `applicationId`, namespace, and Kotlin/Java source package declarations.
@@ -111,7 +111,7 @@ Project-specific installs are useful for teams that want Android setup automatio
 From Codex, invoke one of the skills:
 
 ```text
-Use $android-flavors to configure dev and prod flavors.
+Use $android-flavors to configure dev, stg and prod flavors.
 Use $android to change Android package/applicationId.
 Use $android-firebase to configure Firebase for Android flavors.
 Use $android-assets to generate app icons and splash screens.
@@ -152,7 +152,7 @@ skills/figma-variables-to-flutter-export/scripts/figma-variables-to-flutter-expo
 
 This exporter does not scan the repository. Use a repository-specific skill or explicit prompt context to choose the correct output path and integration style.
 
-After running `mobile-app-config flavors`, run Gradle Sync in Android Studio. The expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
+After running `mobile-app-config flavors`, run Gradle Sync in Android Studio. The expected variants are `devDebug`, `stgDebug`, `prodDebug`, `devRelease`, `stgRelease`, and `prodRelease`.
 
 ### Package name sync
 
@@ -222,7 +222,7 @@ mobile-app-config firebase --mode single --project my-firebase
 Use one Firebase project per flavor:
 
 ```bash
-mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor stg=my-stg --flavor prod=my-prod
 ```
 
 Create missing Firebase Android apps only when explicitly requested:

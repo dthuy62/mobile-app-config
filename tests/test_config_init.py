@@ -73,3 +73,60 @@ def test_existing_flavors_are_detected(tmp_path) -> None:
     assert config["dimension"] == "evironment"
     assert config["flavors"]["dev"]["applicationIdSuffix"] == ".dev"
     assert config["flavors"]["dev"]["buildConfigFields"]["CAREER_OPS_ENVIRONMENT"] == "dev"
+
+
+def test_default_config_uses_neutral_dev_stg_prod() -> None:
+    import json
+
+    from android_mobile_config.config import DEFAULT_CONFIG
+
+    text = json.dumps(DEFAULT_CONFIG)
+    assert "CAREER_OPS" not in text
+    assert "Career Ops" not in text
+    flavors = DEFAULT_CONFIG["flavors"]
+    assert list(flavors) == ["dev", "stg", "prod"]
+    assert flavors["dev"] == {
+        "applicationIdSuffix": ".dev",
+        "appName": "[DEV] My App",
+        "buildConfigFields": {"APP_ENVIRONMENT": "dev", "APP_BASE_URL": "http://10.0.2.2:3000"},
+    }
+    assert flavors["stg"] == {
+        "applicationIdSuffix": ".stg",
+        "appName": "[STG] My App",
+        "buildConfigFields": {"APP_ENVIRONMENT": "stg", "APP_BASE_URL": ""},
+    }
+    assert flavors["prod"] == {
+        "applicationIdSuffix": "",
+        "appName": "My App",
+        "buildConfigFields": {"APP_ENVIRONMENT": "prod", "APP_BASE_URL": ""},
+    }
+    assert list(DEFAULT_CONFIG["firebase"]["flavors"]) == ["dev", "stg", "prod"]
+
+
+def test_flavor_app_name_rule() -> None:
+    from android_mobile_config.config import flavor_app_name
+
+    assert flavor_app_name("dev", "Demo") == "[DEV] Demo"
+    assert flavor_app_name("stg", "Demo") == "[STG] Demo"
+    assert flavor_app_name("prod", "Demo") == "Demo"
+    assert flavor_app_name("staging", "Demo") == "[STAGING] Demo"
+
+
+def test_init_without_flavors_names_all_default_flavors_from_app_name(tmp_path) -> None:
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    assert run_cli(project, "init").returncode == 0
+    flavors = read_config(project)["flavors"]
+    assert [flavors[name]["appName"] for name in flavors] == ["[DEV] No Flavors", "[STG] No Flavors", "No Flavors"]
+
+
+def test_existing_config_keeps_its_flavors(tmp_path) -> None:
+    import json
+
+    project = copy_fixture(tmp_path, "kotlin_no_flavors_app")
+    (project / "android-app-config.json").write_text(
+        json.dumps({"flavors": {"dev": {"applicationIdSuffix": ".dev"}, "prod": {"applicationIdSuffix": ""}}})
+    )
+    assert run_cli(project, "flavors").returncode == 0
+    gradle = (project / "app" / "build.gradle.kts").read_text()
+    assert 'create("stg")' not in gradle
+    assert not (project / "app" / "src" / "stg").exists()

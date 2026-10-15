@@ -88,7 +88,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=(
             "examples:\n"
             "  mobile-app-config firebase --mode single --project my-firebase\n"
-            "  mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod\n"
+            "  mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor stg=my-stg --flavor prod=my-prod\n"
             "  mobile-app-config firebase --mode single --project my-firebase --create-apps"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,

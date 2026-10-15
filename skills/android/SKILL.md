@@ -1,6 +1,6 @@
 ---
 name: android
-description: Configure Android mobile app project setup with deterministic scripts for product flavors, flavor-specific app names, package names, Firebase multi-flavor config, launcher/adaptive/splash assets, and optional Android network security config. Use when the user asks to add or validate dev/prod Android flavors, change Android package/applicationId, Firebase google-services.json setup, generate Android app icons or splash screens, create android-app-config.json, or configure Android network-security XML for local/dev builds.
+description: Configure Android mobile app project setup with deterministic scripts for product flavors, flavor-specific app names, package names, Firebase multi-flavor config, launcher/adaptive/splash assets, and optional Android network security config. Use when the user asks to add or validate dev/stg/prod Android flavors, change Android package/applicationId, Firebase google-services.json setup, generate Android app icons or splash screens, create android-app-config.json, or configure Android network-security XML for local/dev builds.
 ---
 
 # Mobile App Config
@@ -27,7 +27,7 @@ Commands infer Android defaults in memory when `android-app-config.json` is miss
 2. Run the relevant script instead of hand-editing generated sections.
 3. Run the matching validation command or Android Gradle task.
 4. Re-run the command when checking idempotency; the second run should not duplicate Gradle blocks, resource files, or manifest attributes.
-5. After flavor generation, run Gradle Sync in Android Studio; expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
+5. After flavor generation, run Gradle Sync in Android Studio; expected variants are `devDebug`, `stgDebug`, `prodDebug`, `devRelease`, `stgRelease`, and `prodRelease`.
 
 ## Commands
 

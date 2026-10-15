@@ -21,11 +21,11 @@ Use the bundled CLI at `../android/scripts/mobile-app-config`, resolved relative
 ```bash
 mobile-app-config flavors
 mobile-app-config firebase --mode single --project my-firebase
-mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor stg=my-stg --flavor prod=my-prod
 mobile-app-config assets
 mobile-app-config network-security
 ```
 
-After flavor generation, run Gradle Sync in Android Studio. Expected variants are `devDebug`, `prodDebug`, `devRelease`, and `prodRelease`.
+After flavor generation, run Gradle Sync in Android Studio. Expected variants are `devDebug`, `stgDebug`, `prodDebug`, `devRelease`, `stgRelease`, and `prodRelease`.
 
 Splash generation uses Android 12+ platform attrs and Android 11-and-below `windowBackground`; it does not add AndroidX SplashScreen.

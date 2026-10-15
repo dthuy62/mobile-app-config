@@ -9,18 +9,26 @@ The default config file is `android-app-config.json` in the Android project root
   "flavors": {
     "dev": {
       "applicationIdSuffix": ".dev",
-      "appName": "[DEV] Career Ops",
+      "appName": "[DEV] My App",
       "buildConfigFields": {
-        "CAREER_OPS_ENVIRONMENT": "dev",
-        "CAREER_OPS_DEFAULT_BASE_URL": "http://10.0.2.2:3000"
+        "APP_ENVIRONMENT": "dev",
+        "APP_BASE_URL": "http://10.0.2.2:3000"
+      }
+    },
+    "stg": {
+      "applicationIdSuffix": ".stg",
+      "appName": "[STG] My App",
+      "buildConfigFields": {
+        "APP_ENVIRONMENT": "stg",
+        "APP_BASE_URL": ""
       }
     },
     "prod": {
       "applicationIdSuffix": "",
-      "appName": "Career Ops",
+      "appName": "My App",
       "buildConfigFields": {
-        "CAREER_OPS_ENVIRONMENT": "prod",
-        "CAREER_OPS_DEFAULT_BASE_URL": ""
+        "APP_ENVIRONMENT": "prod",
+        "APP_BASE_URL": ""
       }
     }
   },
@@ -38,6 +46,9 @@ The default config file is `android-app-config.json` in the Android project root
     "createApps": false,
     "flavors": {
       "dev": {
+        "project": ""
+      },
+      "stg": {
         "project": ""
       },
       "prod": {
@@ -79,7 +90,7 @@ mobile-app-config firebase --mode single --project my-firebase
 Firebase per-flavor mode:
 
 ```bash
-mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor stg=my-stg --flavor prod=my-prod
 ```
 
 Package name sync:

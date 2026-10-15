@@ -20,7 +20,7 @@ def test_firebase_flags_write_config_and_single_project_files(tmp_path) -> None:
     assert config["firebase"]["project"] == "shared-project"
     google_services = json.loads((project / "app" / "google-services.json").read_text())
     packages = package_names(google_services)
-    assert packages == ["com.example.noflavors", "com.example.noflavors.dev"]
+    assert packages == ["com.example.noflavors", "com.example.noflavors.dev", "com.example.noflavors.stg"]
     assert 'id("com.google.gms.google-services") version "4.5.0" apply false' in (
         project / "build.gradle.kts"
     ).read_text()
@@ -39,6 +39,8 @@ def test_firebase_per_flavor_writes_flavor_files(tmp_path) -> None:
         "--flavor",
         "dev=dev-project",
         "--flavor",
+        "stg=stg-project",
+        "--flavor",
         "prod=prod-project",
         env=env,
     )
@@ -46,6 +48,9 @@ def test_firebase_per_flavor_writes_flavor_files(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     assert "com.example.noflavors.dev" in (
         project / "app" / "src" / "dev" / "google-services.json"
+    ).read_text()
+    assert "com.example.noflavors.stg" in (
+        project / "app" / "src" / "stg" / "google-services.json"
     ).read_text()
     assert "com.example.noflavors" in (project / "app" / "src" / "prod" / "google-services.json").read_text()
 
@@ -170,6 +175,7 @@ elif args[:2] == ["apps:list", "ANDROID"]:
         apps = [
             {"appId": "app-com-example-noflavors", "packageName": "com.example.noflavors"},
             {"appId": "app-com-example-noflavors-dev", "packageName": "com.example.noflavors.dev"},
+            {"appId": "app-com-example-noflavors-stg", "packageName": "com.example.noflavors.stg"},
         ]
     print(json.dumps({"result": apps}))
 elif args[:2] == ["apps:create", "ANDROID"]:

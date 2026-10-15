@@ -25,7 +25,7 @@ mobile-app-config firebase --mode single --project my-firebase
 One Firebase project per flavor:
 
 ```bash
-mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor prod=my-prod
+mobile-app-config firebase --mode per-flavor --flavor dev=my-dev --flavor stg=my-stg --flavor prod=my-prod
 ```
 
 Create missing Firebase Android apps only when explicitly requested:
