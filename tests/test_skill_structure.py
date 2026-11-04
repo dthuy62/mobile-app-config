@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+PACKAGE = ROOT / "skills" / "android" / "scripts" / "android_mobile_config"
 SKILL_NAMES = [
     "android",
     "android-init",
@@ -121,4 +122,5 @@ def test_versions_match_across_manifests() -> None:
     claude = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())["version"]
     codex = json.loads((ROOT / ".codex-plugin" / "plugin.json").read_text())["version"]
     pyproject = re.search(r'^version = "([^"]+)"', (ROOT / "pyproject.toml").read_text(), re.M).group(1)
-    assert claude == codex == pyproject == "1.3.0"
+    init = re.search(r'__version__ = "([^"]+)"', (PACKAGE / "__init__.py").read_text()).group(1)
+    assert claude == codex == pyproject == init == "1.3.1"
