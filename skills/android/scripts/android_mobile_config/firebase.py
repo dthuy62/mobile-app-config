@@ -150,9 +150,15 @@ def create_android_app(project: str, package: str, display_name: str) -> dict[st
 def sdk_config(project: str, app_id: str) -> dict[str, Any]:
     result = checked_firebase(["apps:sdkconfig", "ANDROID", app_id, "--project", project, "--json"], project)
     config = unwrap_result(result)
+    # Firebase CLI wraps the config as {fileName, fileContents}, with the JSON as a string.
+    if isinstance(config, dict) and "fileContents" in config:
+        config = config["fileContents"]
     if isinstance(config, str):
-        config = json.loads(config)
-    if not isinstance(config, dict):
+        try:
+            config = json.loads(config)
+        except json.JSONDecodeError as exc:
+            raise ConfigError(f"Cannot read Firebase SDK config for app {app_id}") from exc
+    if not isinstance(config, dict) or "project_info" not in config:
         raise ConfigError(f"Cannot read Firebase SDK config for app {app_id}")
     return config
 

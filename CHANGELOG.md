@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+- Fixed `firebase` writing a broken `google-services.json` and reporting success: Firebase CLI returns the config as `{fileName, fileContents}`, which is now unpacked. An unusable SDK config now stops the command before anything is written.
+- `__version__` now matches the plugin version.
+
 ## 1.3.0
 
 - Default flavor set is now `dev`, `stg`, `prod` (suffixes `.dev`, `.stg`, none). Projects without a config file get three flavors from `flavors`; `firebase --mode per-flavor` needs a `--flavor stg=...` mapping. Existing `android-app-config.json` files keep their own flavors.
